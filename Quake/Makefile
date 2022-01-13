@@ -181,27 +181,25 @@ SYSOBJ_SYS := pl_linux.o
 SYSOBJ_RES :=
 
 # XXX don't want to build these:
-# XXX may need to replace image.o
-# GLOBJS = \
-# 	gl_refrag.o \
-# 	gl_rlight.o \
-# 	gl_rmain.o \
-# 	gl_fog.o \
-# 	gl_rmisc.o \
-# 	r_part.o \
-# 	r_world.o \
-# 	gl_screen.o \
-# 	gl_sky.o \
-# 	gl_warp.o \
-# 	$(SYSOBJ_GL_VID) \
-# 	gl_draw.o \
-# 	image.o \
-# 	gl_texmgr.o \
-# 	gl_mesh.o \
-# 	r_sprite.o \
-# 	r_alias.o \
-# 	r_brush.o \
-# 	gl_model.o
+GLOBJS = \
+ 	gl_refrag.o \
+ 	gl_rlight.o \
+ 	gl_rmain.o \
+ 	gl_fog.o \
+ 	gl_rmisc.o \
+ 	r_part.o \
+ 	r_world.o \
+ 	gl_screen.o \
+ 	gl_sky.o \
+ 	gl_warp.o \
+ 	gl_draw.o \
+ 	image.o \
+ 	gl_texmgr.o \
+ 	gl_mesh.o \
+ 	r_sprite.o \
+ 	r_alias.o \
+ 	r_brush.o \
+ 	gl_model.o
 
 OBJS := strlcat.o \
 	strlcpy.o \

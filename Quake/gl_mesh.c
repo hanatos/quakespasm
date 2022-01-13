@@ -288,7 +288,7 @@ void BuildTris (void)
 }
 
 static void GL_MakeAliasModelDisplayLists_VBO (void);
-static void GLMesh_LoadVertexBuffer (qmodel_t *m, const aliashdr_t *hdr);
+// static void GLMesh_LoadVertexBuffer (qmodel_t *m, const aliashdr_t *hdr);
 
 /*
 ================
@@ -368,6 +368,7 @@ Original code by MH from RMQEngine
 */
 void GL_MakeAliasModelDisplayLists_VBO (void)
 {
+#if 0
 	int i, j;
 	int maxverts_vbo;
 	trivertx_t *verts;
@@ -440,11 +441,13 @@ void GL_MakeAliasModelDisplayLists_VBO (void)
 	
 	// upload immediately
 	GLMesh_LoadVertexBuffer (aliasmodel, pheader);
+#endif
 }
 
 #define NUMVERTEXNORMALS	 162
 extern	float	r_avertexnormals[NUMVERTEXNORMALS][3];
 
+#if 0
 /*
 ================
 GLMesh_LoadVertexBuffer
@@ -555,6 +558,7 @@ static void GLMesh_LoadVertexBuffer (qmodel_t *m, const aliashdr_t *hdr)
 // invalidate the cached bindings
 	GL_ClearBufferBindings ();
 }
+#endif
 
 /*
 ================
@@ -565,6 +569,7 @@ Loop over all precached alias models, and upload each one to a VBO.
 */
 void GLMesh_LoadVertexBuffers (void)
 {
+#if 0
 	int j;
 	qmodel_t *m;
 	const aliashdr_t *hdr;
@@ -581,6 +586,7 @@ void GLMesh_LoadVertexBuffers (void)
 		
 		GLMesh_LoadVertexBuffer (m, hdr);
 	}
+#endif
 }
 
 /*
@@ -592,6 +598,7 @@ Delete VBOs for all loaded alias models
 */
 void GLMesh_DeleteVertexBuffers (void)
 {
+#if 0
 	int j;
 	qmodel_t *m;
 	
@@ -611,4 +618,5 @@ void GLMesh_DeleteVertexBuffers (void)
 	}
 	
 	GL_ClearBufferBindings ();
+#endif
 }

@@ -234,7 +234,7 @@ void Mod_ResetAll (void)
 	qmodel_t	*mod;
 
 	//ericw -- free alias model VBOs
-	GLMesh_DeleteVertexBuffers ();
+	// GLMesh_DeleteVertexBuffers ();
 	
 	for (i=0 , mod=mod_known ; i<mod_numknown ; i++, mod++)
 	{

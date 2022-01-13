@@ -81,6 +81,7 @@ R_DrawSpriteModel -- johnfitz -- rewritten: now supports all orientations
 */
 void R_DrawSpriteModel (entity_t *e)
 {
+#if 0
 	vec3_t			point, v_forward, v_right, v_up;
 	msprite_t		*psprite;
 	mspriteframe_t	*frame;
@@ -179,4 +180,5 @@ void R_DrawSpriteModel (entity_t *e)
 	//johnfitz: offset decals
 	if (psprite->type == SPR_ORIENTED)
 		GL_PolygonOffset (OFFSET_NONE);
+#endif
 }

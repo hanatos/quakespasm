@@ -166,6 +166,7 @@ void R_MarkSurfaces (void)
 //
 //==============================================================================
 
+#if 0
 /*
 =============
 R_BeginTransparentDrawing -- ericw
@@ -197,6 +198,7 @@ static void R_EndTransparentDrawing (float entalpha)
 		glColor3f (1, 1, 1);
 	}
 }
+#endif
 
 /*
 ================
@@ -205,6 +207,7 @@ R_DrawTextureChains_ShowTris -- johnfitz
 */
 void R_DrawTextureChains_ShowTris (qmodel_t *model, texchain_t chain)
 {
+#if 0
 	int			i;
 	msurface_t	*s;
 	texture_t	*t;
@@ -232,6 +235,7 @@ void R_DrawTextureChains_ShowTris (qmodel_t *model, texchain_t chain)
 			}
 		}
 	}
+#endif
 }
 
 /*
@@ -241,6 +245,7 @@ R_DrawTextureChains_Drawflat -- johnfitz
 */
 void R_DrawTextureChains_Drawflat (qmodel_t *model, texchain_t chain)
 {
+#if 0
 	int			i;
 	msurface_t	*s;
 	texture_t	*t;
@@ -275,6 +280,7 @@ void R_DrawTextureChains_Drawflat (qmodel_t *model, texchain_t chain)
 		}
 	}
 	glColor3f (1,1,1);
+#endif
 	srand ((int) (cl.time * 1000));
 }
 
@@ -285,6 +291,7 @@ R_DrawTextureChains_Glow -- johnfitz
 */
 void R_DrawTextureChains_Glow (qmodel_t *model, entity_t *ent, texchain_t chain)
 {
+#if 0
 	int			i;
 	msurface_t	*s;
 	texture_t	*t;
@@ -311,8 +318,10 @@ void R_DrawTextureChains_Glow (qmodel_t *model, entity_t *ent, texchain_t chain)
 			rs_brushpasses++;
 		}
 	}
+#endif
 }
 
+#if 0
 //==============================================================================
 //
 // VBO SUPPORT
@@ -539,6 +548,7 @@ float GL_WaterAlphaForEntitySurface (entity_t *ent, msurface_t *s)
 	else
 		entalpha = ENTALPHA_DECODE(ent->alpha);
 	return entalpha;
+  return 0.0;
 }
 
 /*
@@ -1076,6 +1086,7 @@ fullbrights:
 		glDepthMask (GL_TRUE);
 	}
 }
+#endif
 
 /*
 =============
@@ -1087,7 +1098,7 @@ void R_DrawWorld (void)
 	if (!r_drawworld_cheatsafe)
 		return;
 
-	R_DrawTextureChains (cl.worldmodel, NULL, chain_world);
+	// R_DrawTextureChains (cl.worldmodel, NULL, chain_world);
 }
 
 /*
@@ -1100,7 +1111,7 @@ void R_DrawWorld_Water (void)
 	if (!r_drawworld_cheatsafe)
 		return;
 
-	R_DrawTextureChains_Water (cl.worldmodel, NULL, chain_world);
+	// R_DrawTextureChains_Water (cl.worldmodel, NULL, chain_world);
 }
 
 /*
@@ -1113,5 +1124,5 @@ void R_DrawWorld_ShowTris (void)
 	if (!r_drawworld_cheatsafe)
 		return;
 
-	R_DrawTextureChains_ShowTris (cl.worldmodel, chain_world);
+	// R_DrawTextureChains_ShowTris (cl.worldmodel, chain_world);
 }

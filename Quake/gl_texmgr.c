@@ -28,11 +28,11 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 const int	gl_solid_format = 3;
 const int	gl_alpha_format = 4;
 
-static cvar_t	gl_texturemode = {"gl_texturemode", "", CVAR_ARCHIVE};
-static cvar_t	gl_texture_anisotropy = {"gl_texture_anisotropy", "1", CVAR_ARCHIVE};
+// static cvar_t	gl_texturemode = {"gl_texturemode", "", CVAR_ARCHIVE};
+// static cvar_t	gl_texture_anisotropy = {"gl_texture_anisotropy", "1", CVAR_ARCHIVE};
 static cvar_t	gl_max_size = {"gl_max_size", "0", CVAR_NONE};
 static cvar_t	gl_picmip = {"gl_picmip", "0", CVAR_NONE};
-static int32_t gl_hardware_maxsize;
+// static int32_t gl_hardware_maxsize;
 
 #define	MAX_GLTEXTURES	4096
 static int numgltextures;
@@ -56,6 +56,7 @@ unsigned int d_8to24table_pants[256];
 ================================================================================
 */
 
+#if 0
 typedef struct
 {
 	int	magfilter;
@@ -266,6 +267,7 @@ static void TexMgr_Imagedump_f (void)
 
 	Con_Printf ("dumped %i textures to %s\n", numgltextures, dirname);
 }
+#endif
 
 /*
 ===============
@@ -339,12 +341,12 @@ gltexture_t *TexMgr_NewTexture (void)
 	glt->next = active_gltextures;
 	active_gltextures = glt;
 
-	glGenTextures(1, &glt->texnum);
+	// glGenTextures(1, &glt->texnum);
 	numgltextures++;
 	return glt;
 }
 
-static void GL_DeleteTexture (gltexture_t *texture);
+// static void GL_DeleteTexture (gltexture_t *texture);
 
 //ericw -- workaround for preventing TexMgr_FreeTexture during TexMgr_ReloadImages
 static qboolean in_reload_images;
@@ -373,7 +375,7 @@ void TexMgr_FreeTexture (gltexture_t *kill)
 		kill->next = free_gltextures;
 		free_gltextures = kill;
 
-		GL_DeleteTexture(kill);
+		// GL_DeleteTexture(kill);
 		numgltextures--;
 		return;
 	}
@@ -386,7 +388,7 @@ void TexMgr_FreeTexture (gltexture_t *kill)
 			kill->next = free_gltextures;
 			free_gltextures = kill;
 
-			GL_DeleteTexture(kill);
+			// GL_DeleteTexture(kill);
 			numgltextures--;
 			return;
 		}
@@ -438,12 +440,14 @@ TexMgr_DeleteTextureObjects
 */
 void TexMgr_DeleteTextureObjects (void)
 {
+#if 0
 	gltexture_t *glt;
 
 	for (glt = active_gltextures; glt; glt = glt->next)
 	{
 		GL_DeleteTexture (glt);
 	}
+#endif
 }
 
 /*
@@ -558,7 +562,7 @@ void TexMgr_RecalcWarpImageSize (void)
 //	int	oldsize = gl_warpimagesize;
 	int	mark;
 	gltexture_t *glt;
-	byte *dummy;
+	// byte *dummy;
 
 	//
 	// find the new correct size
@@ -579,14 +583,14 @@ void TexMgr_RecalcWarpImageSize (void)
 	// resize the textures in opengl
 	//
 	mark = Hunk_LowMark();
-	dummy = (byte *) Hunk_Alloc (gl_warpimagesize*gl_warpimagesize*4);
+	// dummy = (byte *) Hunk_Alloc (gl_warpimagesize*gl_warpimagesize*4);
 
 	for (glt = active_gltextures; glt; glt = glt->next)
 	{
 		if (glt->flags & TEXPREF_WARPIMAGE)
 		{
-			GL_Bind (glt);
-			glTexImage2D (GL_TEXTURE_2D, 0, gl_solid_format, gl_warpimagesize, gl_warpimagesize, 0, GL_RGBA, GL_UNSIGNED_BYTE, dummy);
+			// GL_Bind (glt);
+			// glTexImage2D (GL_TEXTURE_2D, 0, gl_solid_format, gl_warpimagesize, gl_warpimagesize, 0, GL_RGBA, GL_UNSIGNED_BYTE, dummy);
 			glt->width = glt->height = gl_warpimagesize;
 		}
 	}
@@ -621,17 +625,17 @@ void TexMgr_Init (void)
 
 	Cvar_RegisterVariable (&gl_max_size);
 	Cvar_RegisterVariable (&gl_picmip);
-	Cvar_RegisterVariable (&gl_texture_anisotropy);
-	Cvar_SetCallback (&gl_texture_anisotropy, &TexMgr_Anisotropy_f);
-	gl_texturemode.string = glmodes[glmode_idx].name;
-	Cvar_RegisterVariable (&gl_texturemode);
-	Cvar_SetCallback (&gl_texturemode, &TexMgr_TextureMode_f);
-	Cmd_AddCommand ("gl_describetexturemodes", &TexMgr_DescribeTextureModes_f);
-	Cmd_AddCommand ("imagelist", &TexMgr_Imagelist_f);
-	Cmd_AddCommand ("imagedump", &TexMgr_Imagedump_f);
+	// Cvar_RegisterVariable (&gl_texture_anisotropy);
+	// Cvar_SetCallback (&gl_texture_anisotropy, &TexMgr_Anisotropy_f);
+	// gl_texturemode.string = glmodes[glmode_idx].name;
+	// Cvar_RegisterVariable (&gl_texturemode);
+	// Cvar_SetCallback (&gl_texturemode, &TexMgr_TextureMode_f);
+	// Cmd_AddCommand ("gl_describetexturemodes", &TexMgr_DescribeTextureModes_f);
+	// Cmd_AddCommand ("imagelist", &TexMgr_Imagelist_f);
+	// Cmd_AddCommand ("imagedump", &TexMgr_Imagedump_f);
 
 	// poll max size from hardware
-	glGetIntegerv (GL_MAX_TEXTURE_SIZE, &gl_hardware_maxsize);
+	// glGetIntegerv (GL_MAX_TEXTURE_SIZE, &gl_hardware_maxsize);
 
 	// load notexture images
 	notexture = TexMgr_LoadImage (NULL, "notexture", 2, 2, SRC_RGBA, notexture_data, "", (src_offset_t)notexture_data, TEXPREF_NEAREST | TEXPREF_PERSIST | TEXPREF_NOPICMIP);
@@ -653,6 +657,7 @@ void TexMgr_Init (void)
 ================================================================================
 */
 
+#if 0
 /*
 ================
 TexMgr_Pad -- return smallest power of two greater than or equal to s
@@ -804,6 +809,7 @@ static unsigned *TexMgr_ResampleTexture (unsigned *in, int inwidth, int inheight
 
 	return out;
 }
+#endif
 
 /*
 ===============
@@ -1014,6 +1020,7 @@ TexMgr_LoadImage32 -- handles 32bit source data
 */
 static void TexMgr_LoadImage32 (gltexture_t *glt, unsigned *data)
 {
+#if 0
 	int	internalformat,	miplevel, mipwidth, mipheight, picmip;
 
 	if (!gl_texture_NPOT)
@@ -1072,6 +1079,7 @@ static void TexMgr_LoadImage32 (gltexture_t *glt, unsigned *data)
 
 	// set filter modes
 	TexMgr_SetFilterModes (glt);
+#endif
 }
 
 /*
@@ -1178,12 +1186,14 @@ TexMgr_LoadLightmap -- handles lightmap data
 */
 static void TexMgr_LoadLightmap (gltexture_t *glt, byte *data)
 {
+#if 0
 	// upload it
 	GL_Bind (glt);
 	glTexImage2D (GL_TEXTURE_2D, 0, lightmap_bytes, glt->width, glt->height, 0, gl_lightmap_format, GL_UNSIGNED_BYTE, data);
 
 	// set filter modes
 	TexMgr_SetFilterModes (glt);
+#endif
 }
 
 /*
@@ -1410,7 +1420,7 @@ void TexMgr_ReloadImages (void)
 
 	for (glt = active_gltextures; glt; glt = glt->next)
 	{
-		glGenTextures(1, &glt->texnum);
+		// glGenTextures(1, &glt->texnum);
 		TexMgr_ReloadImage (glt, -1, -1);
 	}
 	
@@ -1431,6 +1441,7 @@ void TexMgr_ReloadNobrightImages (void)
 			TexMgr_ReloadImage(glt, -1, -1);
 }
 
+#if 0
 /*
 ================================================================================
 
@@ -1541,3 +1552,4 @@ void GL_ClearBindings(void)
 		currenttexture[i] = GL_UNUSED_TEXTURE;
 	}
 }
+#endif

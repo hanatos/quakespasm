@@ -826,6 +826,7 @@ R_DrawParticles -- johnfitz -- moved all non-drawing code to CL_RunParticles
 */
 void R_DrawParticles (void)
 {
+#if 0
 	particle_t		*p;
 	float			scale;
 	vec3_t			up, right, p_up, p_right, p_upright; //johnfitz -- p_ vectors
@@ -941,6 +942,7 @@ void R_DrawParticles (void)
 	glDisable (GL_BLEND);
 	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
 	glColor3f(1,1,1);
+#endif
 }
 
 
@@ -951,6 +953,7 @@ R_DrawParticles_ShowTris -- johnfitz
 */
 void R_DrawParticles_ShowTris (void)
 {
+#if 0
 	particle_t		*p;
 	float			scale;
 	vec3_t			up, right, p_up, p_right, p_upright;
@@ -1021,5 +1024,6 @@ void R_DrawParticles_ShowTris (void)
 		}
 		glEnd ();
 	}
+#endif
 }
 

@@ -78,12 +78,14 @@ R_SetClearColor_f -- johnfitz
 */
 static void R_SetClearColor_f (cvar_t *var)
 {
+#if 0
 	byte	*rgb;
 	int		s;
 
 	s = (int)r_clearcolor.value & 0xFF;
 	rgb = (byte*)(d_8to24table + s);
 	glClearColor (rgb[0]/255.0,rgb[1]/255.0,rgb[2]/255.0,0);
+#endif
 }
 
 /*
@@ -384,8 +386,8 @@ void R_NewMap (void)
 	r_viewleaf = NULL;
 	R_ClearParticles ();
 
-	GL_BuildLightmaps ();
-	GL_BuildBModelVertexBuffer ();
+	// GL_BuildLightmaps ();
+	// GL_BuildBModelVertexBuffer ();
 	//ericw -- no longer load alias models into a VBO here, it's done in Mod_LoadAliasModel
 
 	r_framecount = 0; //johnfitz -- paranoid?
@@ -425,7 +427,7 @@ void R_TimeRefresh_f (void)
 		GL_EndRendering ();
 	}
 
-	glFinish ();
+	// glFinish ();
 	stop = Sys_DoubleTime ();
 	time = stop-start;
 	Con_Printf ("%f seconds (%f fps)\n", time, 128/time);
@@ -435,6 +437,7 @@ void D_FlushCaches (void)
 {
 }
 
+#if 0
 static GLuint gl_programs[16];
 static int gl_num_programs;
 
@@ -637,3 +640,4 @@ void GL_ClearBufferBindings ()
 	GL_BindBufferFunc (GL_ARRAY_BUFFER, 0);
 	GL_BindBufferFunc (GL_ELEMENT_ARRAY_BUFFER, 0);
 }
+#endif

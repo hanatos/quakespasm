@@ -287,8 +287,10 @@ called at the beginning of each frame
 */
 void Fog_SetupFrame (void)
 {
+#if 0
 	glFogfv(GL_FOG_COLOR, Fog_GetColor());
 	glFogf(GL_FOG_DENSITY, Fog_GetDensity() / 64.0);
+#endif
 }
 
 /*
@@ -300,8 +302,10 @@ called before drawing stuff that should be fogged
 */
 void Fog_EnableGFog (void)
 {
+#if 0
 	if (Fog_GetDensity() > 0)
 		glEnable(GL_FOG);
+#endif
 }
 
 /*
@@ -313,8 +317,10 @@ called after drawing stuff that should be fogged
 */
 void Fog_DisableGFog (void)
 {
+#if 0
 	if (Fog_GetDensity() > 0)
 		glDisable(GL_FOG);
+#endif
 }
 
 /*
@@ -326,10 +332,12 @@ called before drawing stuff that is additive blended -- sets fog color to black
 */
 void Fog_StartAdditive (void)
 {
+#if 0
 	vec3_t color = {0,0,0};
 
 	if (Fog_GetDensity() > 0)
 		glFogfv(GL_FOG_COLOR, color);
+#endif
 }
 
 /*
@@ -341,8 +349,10 @@ called after drawing stuff that is additive blended -- restores fog color
 */
 void Fog_StopAdditive (void)
 {
+#if 0
 	if (Fog_GetDensity() > 0)
 		glFogfv(GL_FOG_COLOR, Fog_GetColor());
+#endif
 }
 
 //==============================================================================
@@ -406,5 +416,7 @@ ericw -- moved from Fog_Init, state that needs to be setup when a new context is
 */
 void Fog_SetupState (void)
 {
+#if 0
 	glFogi(GL_FOG_MODE, GL_EXP2);
+#endif
 }

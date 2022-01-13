@@ -120,6 +120,7 @@ cvar_t	r_scale = {"r_scale", "1", CVAR_ARCHIVE};
 //
 //==============================================================================
 
+#if 0
 static GLuint r_gamma_texture;
 static GLuint r_gamma_program;
 static int r_gamma_texture_width, r_gamma_texture_height;
@@ -260,6 +261,7 @@ void GLSLGamma_GammaCorrect (void)
 // clear cached binding
 	GL_ClearBindings ();
 }
+#endif
 
 /*
 =================
@@ -322,10 +324,12 @@ R_RotateForEntity -- johnfitz -- modified to take origin and angles instead of p
 */
 void R_RotateForEntity (vec3_t origin, vec3_t angles)
 {
+#if 0
 	glTranslatef (origin[0],  origin[1],  origin[2]);
 	glRotatef (angles[1],  0, 0, 1);
 	glRotatef (-angles[0],  0, 1, 0);
 	glRotatef (angles[2],  1, 0, 0);
+#endif
 }
 
 /*
@@ -337,6 +341,7 @@ negative offset moves polygon closer to camera
 */
 void GL_PolygonOffset (int offset)
 {
+#if 0
 	if (offset > 0)
 	{
 		glEnable (GL_POLYGON_OFFSET_FILL);
@@ -354,6 +359,7 @@ void GL_PolygonOffset (int offset)
 		glDisable (GL_POLYGON_OFFSET_FILL);
 		glDisable (GL_POLYGON_OFFSET_LINE);
 	}
+#endif
 }
 
 //==============================================================================
@@ -434,10 +440,12 @@ GL_SetFrustum -- johnfitz -- written to replace MYgluPerspective
 float frustum_skew = 0.0; //used by r_stereo
 void GL_SetFrustum(float fovx, float fovy)
 {
+#if 0
 	float xmax, ymax;
 	xmax = NEARCLIP * tan( fovx * M_PI / 360.0 );
 	ymax = NEARCLIP * tan( fovy * M_PI / 360.0 );
 	glFrustum(-xmax + frustum_skew, xmax + frustum_skew, -ymax, ymax, NEARCLIP, gl_farclip.value);
+#endif
 }
 
 /*
@@ -447,6 +455,7 @@ R_SetupGL
 */
 void R_SetupGL (void)
 {
+#if 0
 	int scale;
 
 	//johnfitz -- rewrote this section
@@ -484,6 +493,7 @@ void R_SetupGL (void)
 	glDisable(GL_BLEND);
 	glDisable(GL_ALPHA_TEST);
 	glEnable(GL_DEPTH_TEST);
+#endif
 }
 
 /*
@@ -493,6 +503,7 @@ R_Clear -- johnfitz -- rewritten and gutted
 */
 void R_Clear (void)
 {
+#if 0
 	unsigned int clearbits;
 
 	clearbits = GL_DEPTH_BUFFER_BIT;
@@ -502,6 +513,7 @@ void R_Clear (void)
 	if (gl_clear.value)
 		clearbits |= GL_COLOR_BUFFER_BIT;
 	glClear (clearbits);
+#endif
 }
 
 /*
@@ -634,6 +646,7 @@ R_DrawViewModel -- johnfitz -- gutted
 */
 void R_DrawViewModel (void)
 {
+#if 0
 	if (!r_drawviewmodel.value || !r_drawentities.value || chase_active.value)
 		return;
 
@@ -653,6 +666,7 @@ void R_DrawViewModel (void)
 	glDepthRange (0, 0.3);
 	R_DrawAliasModel (currententity);
 	glDepthRange (0, 1);
+#endif
 }
 
 /*
@@ -662,6 +676,7 @@ R_EmitWirePoint -- johnfitz -- draws a wireframe cross shape for point entities
 */
 void R_EmitWirePoint (vec3_t origin)
 {
+#if 0
 	int size=8;
 
 	glBegin (GL_LINES);
@@ -672,6 +687,7 @@ void R_EmitWirePoint (vec3_t origin)
 	glVertex3f (origin[0], origin[1], origin[2]-size);
 	glVertex3f (origin[0], origin[1], origin[2]+size);
 	glEnd ();
+#endif
 }
 
 /*
@@ -681,6 +697,7 @@ R_EmitWireBox -- johnfitz -- draws one axis aligned bounding box
 */
 void R_EmitWireBox (vec3_t mins, vec3_t maxs)
 {
+#if 0
 	glBegin (GL_QUAD_STRIP);
 	glVertex3f (mins[0], mins[1], mins[2]);
 	glVertex3f (mins[0], mins[1], maxs[2]);
@@ -693,6 +710,7 @@ void R_EmitWireBox (vec3_t mins, vec3_t maxs)
 	glVertex3f (mins[0], mins[1], mins[2]);
 	glVertex3f (mins[0], mins[1], maxs[2]);
 	glEnd ();
+#endif
 }
 
 /*
@@ -704,6 +722,7 @@ draw bounding boxes -- the server-side boxes, not the renderer cullboxes
 */
 void R_ShowBoundingBoxes (void)
 {
+#if 0
 	extern		edict_t *sv_player;
 	vec3_t		mins,maxs;
 	edict_t		*ed;
@@ -750,6 +769,7 @@ void R_ShowBoundingBoxes (void)
 	glEnable (GL_DEPTH_TEST);
 
 	Sbar_Changed (); //so we don't get dots collecting on the statusbar
+#endif
 }
 
 /*
@@ -759,6 +779,7 @@ R_ShowTris -- johnfitz
 */
 void R_ShowTris (void)
 {
+#if 0
 	extern cvar_t r_particles;
 	int i;
 
@@ -834,6 +855,7 @@ void R_ShowTris (void)
 		glEnable (GL_DEPTH_TEST);
 
 	Sbar_Changed (); //so we don't get dots collecting on the statusbar
+#endif
 }
 
 /*
@@ -843,6 +865,7 @@ R_DrawShadows
 */
 void R_DrawShadows (void)
 {
+#if 0
 	int i;
 
 	if (!r_shadows.value || !r_drawentities.value || r_drawflat_cheatsafe || r_lightmap_cheatsafe)
@@ -874,6 +897,7 @@ void R_DrawShadows (void)
 	{
 		glDisable(GL_STENCIL_TEST);
 	}
+#endif
 }
 
 /*
@@ -914,8 +938,10 @@ void R_RenderScene (void)
 	R_ShowBoundingBoxes (); //johnfitz
 }
 
+#if 0
 static GLuint r_scaleview_texture;
 static int r_scaleview_texture_width, r_scaleview_texture_height;
+#endif
 
 /*
 =============
@@ -924,8 +950,10 @@ R_ScaleView_DeleteTexture
 */
 void R_ScaleView_DeleteTexture (void)
 {
+#if 0
 	glDeleteTextures (1, &r_scaleview_texture);
 	r_scaleview_texture = 0;
+#endif
 }
 
 /*
@@ -940,6 +968,7 @@ or possibly as a perforance boost on slow graphics cards.
 */
 void R_ScaleView (void)
 {
+#if 0
 	float smax, tmax;
 	int scale;
 	int srcx, srcy, srcw, srch;
@@ -1019,6 +1048,7 @@ void R_ScaleView (void)
 
 	// clear cached binding
 	GL_ClearBindings ();
+#endif
 }
 
 /*
@@ -1028,6 +1058,7 @@ R_RenderView
 */
 void R_RenderView (void)
 {
+#if 0
 	double	time1, time2;
 
 	if (r_norefresh.value)
@@ -1117,5 +1148,6 @@ void R_RenderView (void)
 					rs_aliaspolys,
 					rs_dynamiclightmaps);
 	//johnfitz
+#endif
 }
 

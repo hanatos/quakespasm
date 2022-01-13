@@ -80,6 +80,7 @@ DrawGLPoly
 */
 void DrawGLPoly (glpoly_t *p)
 {
+#if 0
 	float	*v;
 	int		i;
 
@@ -91,6 +92,7 @@ void DrawGLPoly (glpoly_t *p)
 		glVertex3fv (v);
 	}
 	glEnd ();
+#endif
 }
 
 /*
@@ -100,6 +102,7 @@ DrawGLTriangleFan -- johnfitz -- like DrawGLPoly but for r_showtris
 */
 void DrawGLTriangleFan (glpoly_t *p)
 {
+#if 0
 	float	*v;
 	int		i;
 
@@ -110,6 +113,7 @@ void DrawGLTriangleFan (glpoly_t *p)
 		glVertex3fv (v);
 	}
 	glEnd ();
+#endif
 }
 
 /*
@@ -499,6 +503,7 @@ R_DrawBrushModel
 */
 void R_DrawBrushModel (entity_t *e)
 {
+#if 0
 	int			i, k;
 	msurface_t	*psurf;
 	float		dot;
@@ -576,6 +581,7 @@ void R_DrawBrushModel (entity_t *e)
 	R_DrawTextureChains_Water (clmodel, e, chain_model);
 
 	glPopMatrix ();
+#endif
 }
 
 /*
@@ -585,6 +591,7 @@ R_DrawBrushModel_ShowTris -- johnfitz
 */
 void R_DrawBrushModel_ShowTris (entity_t *e)
 {
+#if 0
 	int			i;
 	msurface_t	*psurf;
 	float		dot;
@@ -637,6 +644,7 @@ void R_DrawBrushModel_ShowTris (entity_t *e)
 	}
 
 	glPopMatrix ();
+#endif
 }
 
 /*
@@ -655,6 +663,7 @@ called during rendering
 */
 void R_RenderDynamicLightmaps (msurface_t *fa)
 {
+#if 0
 	byte		*base;
 	int			maps;
 	glRect_t    *theRect;
@@ -702,6 +711,7 @@ dynamic:
 			R_BuildLightMap (fa, base, LMBLOCK_WIDTH*lightmap_bytes);
 		}
 	}
+#endif
 }
 
 /*
@@ -880,6 +890,7 @@ with all the surfaces from all brush models
 */
 void GL_BuildLightmaps (void)
 {
+#if 0
 	char	name[24];
 	int		i, j;
 	struct lightmap_s *lm;
@@ -955,8 +966,10 @@ void GL_BuildLightmaps (void)
 	if (i > 64)
 		Con_DWarning("%i lightmaps exceeds standard limit of 64.\n",i);
 	//johnfitz
+#endif
 }
 
+#if 0
 /*
 =============================================================
 
@@ -1328,3 +1341,4 @@ void R_RebuildAllLightmaps (void)
 				 GL_UNSIGNED_BYTE, lightmaps[i].data);
 	}
 }
+#endif

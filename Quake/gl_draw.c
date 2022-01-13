@@ -430,6 +430,7 @@ Draw_CharacterQuad -- johnfitz -- seperate function to spit out verts
 */
 void Draw_CharacterQuad (int x, int y, char num)
 {
+#if 0
 	int				row, col;
 	float			frow, fcol, size;
 
@@ -448,6 +449,7 @@ void Draw_CharacterQuad (int x, int y, char num)
 	glVertex2f (x+8, y+8);
 	glTexCoord2f (fcol, frow + size);
 	glVertex2f (x, y+8);
+#endif
 }
 
 /*
@@ -457,6 +459,7 @@ Draw_Character -- johnfitz -- modified to call Draw_CharacterQuad
 */
 void Draw_Character (int x, int y, int num)
 {
+#if 0
 	if (y <= -8)
 		return;			// totally off screen
 
@@ -471,6 +474,7 @@ void Draw_Character (int x, int y, int num)
 	Draw_CharacterQuad (x, y, (char) num);
 
 	glEnd ();
+#endif
 }
 
 /*
@@ -480,6 +484,7 @@ Draw_String -- johnfitz -- modified to call Draw_CharacterQuad
 */
 void Draw_String (int x, int y, const char *str)
 {
+#if 0
 	if (y <= -8)
 		return;			// totally off screen
 
@@ -495,6 +500,7 @@ void Draw_String (int x, int y, const char *str)
 	}
 
 	glEnd ();
+#endif
 }
 
 /*
@@ -504,6 +510,7 @@ Draw_Pic -- johnfitz -- modified
 */
 void Draw_Pic (int x, int y, qpic_t *pic)
 {
+#if 0
 	glpic_t			*gl;
 
 	if (scrap_dirty)
@@ -520,6 +527,7 @@ void Draw_Pic (int x, int y, qpic_t *pic)
 	glTexCoord2f (gl->sl, gl->th);
 	glVertex2f (x, y+pic->height);
 	glEnd ();
+#endif
 }
 
 /*
@@ -552,6 +560,7 @@ Draw_ConsoleBackground -- johnfitz -- rewritten
 */
 void Draw_ConsoleBackground (void)
 {
+#if 0
 	qpic_t *pic;
 	float alpha;
 
@@ -583,6 +592,7 @@ void Draw_ConsoleBackground (void)
 			glColor4f (1,1,1,1);
 		}
 	}
+#endif
 }
 
 
@@ -596,6 +606,7 @@ refresh window.
 */
 void Draw_TileClear (int x, int y, int w, int h)
 {
+#if 0
 	glpic_t	*gl;
 
 	gl = (glpic_t *)draw_backtile->data;
@@ -612,6 +623,7 @@ void Draw_TileClear (int x, int y, int w, int h)
 	glTexCoord2f ( x/64.0, (y+h)/64.0 );
 	glVertex2f (x, y+h);
 	glEnd ();
+#endif
 }
 
 /*
@@ -623,6 +635,7 @@ Fills a box of pixels with a single color
 */
 void Draw_Fill (int x, int y, int w, int h, int c, float alpha) //johnfitz -- added alpha
 {
+#if 0
 	byte *pal = (byte *)d_8to24table; //johnfitz -- use d_8to24table instead of host_basepal
 
 	glDisable (GL_TEXTURE_2D);
@@ -641,6 +654,7 @@ void Draw_Fill (int x, int y, int w, int h, int c, float alpha) //johnfitz -- ad
 	glDisable (GL_BLEND); //johnfitz -- for alpha
 	glEnable (GL_ALPHA_TEST); //johnfitz -- for alpha
 	glEnable (GL_TEXTURE_2D);
+#endif
 }
 
 /*
@@ -650,6 +664,7 @@ Draw_FadeScreen -- johnfitz -- revised
 */
 void Draw_FadeScreen (void)
 {
+#if 0
 	GL_SetCanvas (CANVAS_DEFAULT);
 
 	glEnable (GL_BLEND);
@@ -668,6 +683,7 @@ void Draw_FadeScreen (void)
 	glEnable (GL_TEXTURE_2D);
 	glEnable (GL_ALPHA_TEST);
 	glDisable (GL_BLEND);
+#endif
 
 	Sbar_Changed();
 }
@@ -679,6 +695,7 @@ GL_SetCanvas -- johnfitz -- support various canvas types
 */
 void GL_SetCanvas (canvastype newcanvas)
 {
+#if 0
 	extern vrect_t scr_vrect;
 	float s;
 	int lines;
@@ -752,6 +769,7 @@ void GL_SetCanvas (canvastype newcanvas)
 
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity ();
+#endif
 }
 
 /*
@@ -761,6 +779,7 @@ GL_Set2D -- johnfitz -- rewritten
 */
 void GL_Set2D (void)
 {
+#if 0
 	currentcanvas = CANVAS_INVALID;
 	GL_SetCanvas (CANVAS_DEFAULT);
 
@@ -769,4 +788,5 @@ void GL_Set2D (void)
 	glDisable (GL_BLEND);
 	glEnable (GL_ALPHA_TEST);
 	glColor4f (1,1,1,1);
+#endif
 }

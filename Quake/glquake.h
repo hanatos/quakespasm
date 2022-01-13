@@ -142,7 +142,6 @@ extern	cvar_t	r_dynamic;
 extern	cvar_t	r_novis;
 extern	cvar_t	r_scale;
 
-#if 0
 extern	cvar_t	gl_clear;
 extern	cvar_t	gl_cull;
 extern	cvar_t	gl_smoothmodels;
@@ -161,6 +160,7 @@ extern int		gl_stencilbits;
 // Multitexture
 extern	qboolean	mtexenabled;
 extern	qboolean	gl_mtexable;
+#if 0
 extern PFNGLMULTITEXCOORD2FARBPROC  GL_MTexCoord2fFunc;
 extern PFNGLACTIVETEXTUREARBPROC    GL_SelectTextureFunc;
 extern PFNGLCLIENTACTIVETEXTUREARBPROC	GL_ClientActiveTextureFunc;
@@ -375,7 +375,7 @@ void R_RebuildAllLightmaps (void);
 
 int R_LightPoint (vec3_t p);
 
-// void GL_SubdivideSurface (msurface_t *fa);
+void GL_SubdivideSurface (msurface_t *fa);
 void R_BuildLightMap (msurface_t *surf, byte *dest, int stride);
 void R_RenderDynamicLightmaps (msurface_t *fa);
 void R_UploadLightmaps (void);
@@ -395,7 +395,7 @@ void R_DeleteShaders (void);
 void DrawGLTriangleFan (glpoly_t *p);
 void DrawGLPoly (glpoly_t *p);
 void DrawWaterPoly (glpoly_t *p);
-// void GL_MakeAliasModelDisplayLists (qmodel_t *m, aliashdr_t *hdr);
+void GL_MakeAliasModelDisplayLists (qmodel_t *m, aliashdr_t *hdr);
 
 void Sky_Init (void);
 void Sky_ClearAll (void);

@@ -85,6 +85,7 @@ void AddLightBlend (float r, float g, float b, float a2)
 
 void R_RenderDlight (dlight_t *light)
 {
+#if 0
 	int		i, j;
 	float	a;
 	vec3_t	v;
@@ -114,6 +115,7 @@ void R_RenderDlight (dlight_t *light)
 		glVertex3fv (v);
 	}
 	glEnd ();
+#endif
 }
 
 /*
@@ -123,6 +125,7 @@ R_RenderDlights
 */
 void R_RenderDlights (void)
 {
+#if 0
 	int		i;
 	dlight_t	*l;
 
@@ -150,6 +153,7 @@ void R_RenderDlights (void)
 	glEnable (GL_TEXTURE_2D);
 	glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glDepthMask (1);
+#endif
 }
 
 

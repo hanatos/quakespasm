@@ -273,6 +273,7 @@ float CalcFovy (float fov_x, float width, float height)
 	return a;
 }
 
+#if 0
 /*
 =================
 SCR_CalcRefdef
@@ -330,6 +331,7 @@ static void SCR_CalcRefdef (void)
 
 	scr_vrect = r_refdef.vrect;
 }
+#endif
 
 
 /*
@@ -760,6 +762,7 @@ SCREEN SHOTS
 ==============================================================================
 */
 
+#if 0
 static void SCR_ScreenShot_Usage (void)
 {
 	Con_Printf ("usage: screenshot <format> <quality>\n");
@@ -767,6 +770,7 @@ static void SCR_ScreenShot_Usage (void)
 	Con_Printf ("   quality must be 1-100\n");
 	return;
 }
+#endif
 
 /*
 ==================
@@ -775,6 +779,7 @@ SCR_ScreenShot_f -- johnfitz -- rewritten to use Image_WriteTGA
 */
 void SCR_ScreenShot_f (void)
 {
+#if 0
 	byte	*buffer;
 	char	ext[4];
 	char	imagename[16];  //johnfitz -- was [80]
@@ -849,6 +854,7 @@ void SCR_ScreenShot_f (void)
 		Con_Printf ("SCR_ScreenShot_f: Couldn't create %s\n", imagename);
 
 	free (buffer);
+#endif
 }
 
 
@@ -1004,6 +1010,7 @@ johnfitz -- modified to use glwidth/glheight instead of vid.width/vid.height
 */
 void SCR_TileClear (void)
 {
+#if 0
 	//ericw -- added check for glsl gamma. TODO: remove this ugly optimization?
 	if (scr_tileclear_updates >= vid.numpages && !gl_clear.value && !(gl_glsl_gamma_able && vid_gamma.value != 1))
 		return;
@@ -1036,6 +1043,7 @@ void SCR_TileClear (void)
 						r_refdef.vrect.width,
 						glheight - r_refdef.vrect.y - r_refdef.vrect.height - sb_lines);
 	}
+#endif
 }
 
 /*
@@ -1051,6 +1059,7 @@ needs almost the entire 256k of stack space!
 */
 void SCR_UpdateScreen (void)
 {
+#if 0
 	vid.numpages = (gl_triplebuffer.value) ? 3 : 2;
 
 	if (scr_disabled_for_loading)
@@ -1132,5 +1141,6 @@ void SCR_UpdateScreen (void)
 	GLSLGamma_GammaCorrect ();
 
 	GL_EndRendering ();
+#endif
 }
 

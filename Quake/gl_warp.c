@@ -179,6 +179,7 @@ DrawWaterPoly -- johnfitz
 */
 void DrawWaterPoly (glpoly_t *p)
 {
+#if 0
 	float	*v;
 	int		i;
 
@@ -204,6 +205,7 @@ void DrawWaterPoly (glpoly_t *p)
 		}
 		glEnd ();
 	}
+#endif
 }
 
 //==============================================================================
@@ -219,6 +221,7 @@ R_UpdateWarpTextures -- johnfitz -- each frame, update warping textures
 */
 void R_UpdateWarpTextures (void)
 {
+#if 0
 	texture_t *tx;
 	int i;
 	float x, y, x2, warptess;
@@ -269,4 +272,5 @@ void R_UpdateWarpTextures (void)
 
 	//if viewsize is less than 100, we need to redraw the frame around the viewport
 	scr_tileclear_updates = 0;
+#endif
 }

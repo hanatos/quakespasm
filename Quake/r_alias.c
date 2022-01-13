@@ -67,6 +67,7 @@ typedef struct {
 } lerpdata_t;
 //johnfitz
 
+#if 0
 static GLuint r_alias_program;
 
 // uniforms used in vert shader
@@ -1000,4 +1001,4 @@ void R_DrawAliasModel_ShowTris (entity_t *e)
 
 	glPopMatrix ();
 }
-
+#endif
