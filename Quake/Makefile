@@ -246,9 +246,8 @@ OBJS := strlcat.o \
 # Linux build rules
 # ------------------------
 
-libquakespasm.a: $(OBJS)
-	$(AR) r $@ $(OBJS)
-	$(call do_strip,$@)
+libquakespasm.a: $(OBJS) Makefile
+	$(AR) crs $@ $(OBJS)
 
 image.o: lodepng.c lodepng.h stb_image_write.h
 
