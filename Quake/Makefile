@@ -1,14 +1,12 @@
+# cannibalised quakespasm makefile, with all the sdl and gl stuff removed.
+# we'll use it as a library and just grab the data from this to pass it to vulkan instead.
+
 # GNU Makefile for QuakeSpasm unix targets.
-# You need the SDL library fully installed.
 # "make DEBUG=1" to build a debug client.
-# "make SDL_CONFIG=/path/to/sdl-config" for unusual SDL installations.
 # "make DO_USERDIRS=1" to enable user directories support
 
 # Enable/Disable user directories support
 DO_USERDIRS=0
-
-### Enable/Disable SDL2
-USE_SDL2=0
 
 ### Enable/Disable codecs for streaming music support
 USE_CODEC_WAVE=1
@@ -44,6 +42,7 @@ DEBUG   ?= 0
 
 CC ?= gcc
 LINKER = $(CC)
+AR ?= ar
 
 STRIP ?= strip
 PKG_CONFIG ?= pkg-config
@@ -71,38 +70,6 @@ endif
 ifeq ($(DO_USERDIRS),1)
 CFLAGS += -DDO_USERDIRS=1
 endif
-
-### X11BASE only gets used if its in an unusual place
-
-X11DIRS := /usr/X11R7 /usr/local/X11R7 /usr/X11R6 /usr/local/X11R6
-X11BASE_GUESS := $(shell \
-	if [ -e /usr/include/X11/Xlib.h ] && \
-		[ -e /usr/lib/libX11.a ]; then exit 0; fi; \
-	if [ -e /usr/local/include/X11/Xlib.h ] && \
-		[ -e /usr/local/lib/libX11.a ]; then exit 0; fi; \
-	for DIR in $(X11DIRS); do \
-            if [ -e $$DIR/include/X11/Xlib.h ] && \
-		[ -e $$DIR/lib/libX11.a ]; then echo $$DIR; break; fi; \
-	done )
-
-X11BASE	?= $(X11BASE_GUESS)
-
-ifneq ($(X11BASE),)
-LDFLAGS+= -L$(X11BASE)/lib
-CFLAGS += -I$(X11BASE)/include
-endif
-
-ifeq ($(USE_SDL2),1)
-CFLAGS += -DUSE_SDL2
-endif
-
-ifeq ($(USE_SDL2),1)
-SDL_CONFIG ?= sdl2-config
-else
-SDL_CONFIG ?= sdl-config
-endif
-SDL_CFLAGS := $(shell $(SDL_CONFIG) --cflags)
-SDL_LIBS   := $(shell $(SDL_CONFIG) --libs)
 
 ifeq ($(HOST_OS),sunos)
 NET_LIBS   :=-lsocket -lnsl -lresolv
@@ -173,7 +140,7 @@ ifeq ($(USE_CODEC_UMX),1)
 CFLAGS+= -DUSE_CODEC_UMX
 endif
 
-COMMON_LIBS:= -lm -lGL
+COMMON_LIBS:= -lm
 
 LIBS := $(COMMON_LIBS) $(NET_LIBS) $(CODECLIBS)
 
@@ -183,14 +150,14 @@ LIBS := $(COMMON_LIBS) $(NET_LIBS) $(CODECLIBS)
 
 .PHONY:	clean debug release
 
-DEFAULT_TARGET := quakespasm
+DEFAULT_TARGET := libquakespasm.a
 
 # ---------------------------
 # rules
 # ---------------------------
 
 %.o:	%.c
-	$(CC) $(DFLAGS) -c $(CFLAGS) $(SDL_CFLAGS) -o $@ $<
+	$(CC) $(DFLAGS) -c $(CFLAGS) -o $@ $<
 
 # ----------------------------------------------------------------------------
 # objects
@@ -208,43 +175,37 @@ MUSIC_OBJS:= bgmusic.o \
 	snd_xmp.o \
 	snd_umx.o
 COMOBJ_SND := snd_dma.o snd_mix.o snd_mem.o $(MUSIC_OBJS)
-SYSOBJ_SND := snd_sdl.o
-SYSOBJ_CDA := cd_sdl.o
-SYSOBJ_INPUT := in_sdl.o
-SYSOBJ_GL_VID:= gl_vidsdl.o
 SYSOBJ_NET := net_bsd.o net_udp.o
-SYSOBJ_SYS := pl_linux.o sys_sdl_unix.o
-SYSOBJ_MAIN:= main_sdl.o
+SYSOBJ_SYS := pl_linux.o
 SYSOBJ_RES :=
 
-GLOBJS = \
-	gl_refrag.o \
-	gl_rlight.o \
-	gl_rmain.o \
-	gl_fog.o \
-	gl_rmisc.o \
-	r_part.o \
-	r_world.o \
-	gl_screen.o \
-	gl_sky.o \
-	gl_warp.o \
-	$(SYSOBJ_GL_VID) \
-	gl_draw.o \
-	image.o \
-	gl_texmgr.o \
-	gl_mesh.o \
-	r_sprite.o \
-	r_alias.o \
-	r_brush.o \
-	gl_model.o
+# XXX don't want to build these:
+# XXX may need to replace image.o
+# GLOBJS = \
+# 	gl_refrag.o \
+# 	gl_rlight.o \
+# 	gl_rmain.o \
+# 	gl_fog.o \
+# 	gl_rmisc.o \
+# 	r_part.o \
+# 	r_world.o \
+# 	gl_screen.o \
+# 	gl_sky.o \
+# 	gl_warp.o \
+# 	$(SYSOBJ_GL_VID) \
+# 	gl_draw.o \
+# 	image.o \
+# 	gl_texmgr.o \
+# 	gl_mesh.o \
+# 	r_sprite.o \
+# 	r_alias.o \
+# 	r_brush.o \
+# 	gl_model.o
 
 OBJS := strlcat.o \
 	strlcpy.o \
 	$(GLOBJS) \
-	$(SYSOBJ_INPUT) \
 	$(COMOBJ_SND) \
-	$(SYSOBJ_SND) \
-	$(SYSOBJ_CDA) \
 	$(SYSOBJ_NET) \
 	net_dgrm.o \
 	net_loop.o \
@@ -279,24 +240,21 @@ OBJS := strlcat.o \
 	sv_user.o \
 	world.o \
 	zone.o \
-	$(SYSOBJ_SYS) $(SYSOBJ_MAIN) $(SYSOBJ_RES)
+	$(SYSOBJ_SYS) $(SYSOBJ_RES)
 
 # ------------------------
 # Linux build rules
 # ------------------------
 
-quakespasm:	$(OBJS)
-	$(LINKER) $(OBJS) $(LDFLAGS) $(LIBS) $(SDL_LIBS) -o $@
+libquakespasm.a: $(OBJS)
+	$(AR) r $@ $(OBJS)
 	$(call do_strip,$@)
 
 image.o: lodepng.c lodepng.h stb_image_write.h
 
-release:	quakespasm
+release: libquakespasm.a
 debug:
 	$(error Use "make DEBUG=1")
 
 clean:
 	rm -f $(shell find . \( -name '*~' -o -name '#*#' -o -name '*.o' -o -name '*.res' -o -name $(DEFAULT_TARGET) \) -print)
-
-install:	quakespasm
-	cp quakespasm /usr/local/games/quake

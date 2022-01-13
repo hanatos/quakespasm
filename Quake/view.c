@@ -531,6 +531,7 @@ V_PolyBlend -- johnfitz -- moved here from gl_rmain.c, and rewritten to use glOr
 */
 void V_PolyBlend (void)
 {
+#if 0 // jo -- not a good place for opengl stuff here after all
 	if (!gl_polyblend.value || !v_blend[3])
 		return;
 
@@ -560,6 +561,7 @@ void V_PolyBlend (void)
 	glEnable (GL_DEPTH_TEST);
 	glEnable (GL_TEXTURE_2D);
 	glEnable (GL_ALPHA_TEST);
+#endif
 }
 
 /*

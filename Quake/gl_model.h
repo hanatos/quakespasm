@@ -25,6 +25,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "modelgen.h"
 #include "spritegn.h"
+#include <stdint.h>
 
 /*
 
@@ -486,8 +487,8 @@ typedef struct qmodel_s
 // alias model
 //
 
-	GLuint		meshvbo;
-	GLuint		meshindexesvbo;
+  uint32_t meshvbo;
+  uint32_t meshindexesvbo;
 	int			vboindexofs;    // offset in vbo of the hdr->numindexes unsigned shorts
 	int			vboxyzofs;      // offset in vbo of hdr->numposes*hdr->numverts_vbo meshxyz_t
 	int			vbostofs;       // offset in vbo of hdr->numverts_vbo meshst_t

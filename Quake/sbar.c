@@ -281,6 +281,7 @@ Sbar_DrawPicAlpha -- johnfitz
 */
 void Sbar_DrawPicAlpha (int x, int y, qpic_t *pic, float alpha)
 {
+#if 0 // jo -- this gl code should not be in here
 	glDisable (GL_ALPHA_TEST);
 	glEnable (GL_BLEND);
 	glColor4f(1,1,1,alpha);
@@ -288,6 +289,7 @@ void Sbar_DrawPicAlpha (int x, int y, qpic_t *pic, float alpha)
 	glColor4f(1,1,1,1); // ericw -- changed from glColor3f to work around intel 855 bug with "r_oldwater 0" and "scr_sbaralpha 0"
 	glDisable (GL_BLEND);
 	glEnable (GL_ALPHA_TEST);
+#endif
 }
 
 /*
@@ -319,6 +321,7 @@ scroll the string inside a glscissor region
 */
 void Sbar_DrawScrollString (int x, int y, int width, const char *str)
 {
+#if 0 // jo -- disable gl code
 	float scale;
 	int len, ofs, left;
 
@@ -339,6 +342,7 @@ void Sbar_DrawScrollString (int x, int y, int width, const char *str)
 	Sbar_DrawString (x - ofs + len, y, str);
 
 	glDisable (GL_SCISSOR_TEST);
+#endif
 }
 
 /*
@@ -933,8 +937,8 @@ void Sbar_Draw (void)
 	if (cl.intermission)
 		return; //johnfitz -- never draw sbar during intermission
 
-	if (sb_updates >= vid.numpages && !gl_clear.value && scr_sbaralpha.value >= 1 //johnfitz -- gl_clear, scr_sbaralpha
-        && !(gl_glsl_gamma_able && vid_gamma.value != 1))                         //ericw -- must draw sbar every frame if doing glsl gamma
+	// ??? if (sb_updates >= vid.numpages && !gl_clear.value && scr_sbaralpha.value >= 1 //johnfitz -- gl_clear, scr_sbaralpha
+	if (sb_updates >= vid.numpages && scr_sbaralpha.value >= 1) //johnfitz -- gl_clear, scr_sbaralpha
 		return;
 
 	sb_updates++;

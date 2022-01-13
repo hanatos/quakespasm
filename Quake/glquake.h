@@ -142,6 +142,7 @@ extern	cvar_t	r_dynamic;
 extern	cvar_t	r_novis;
 extern	cvar_t	r_scale;
 
+#if 0
 extern	cvar_t	gl_clear;
 extern	cvar_t	gl_cull;
 extern	cvar_t	gl_smoothmodels;
@@ -261,6 +262,7 @@ void GL_PolygonOffset (int);
 #define GL_SOURCE1_ALPHA_EXT	0x8589
 extern qboolean gl_texture_env_combine;
 extern qboolean gl_texture_env_add; // for GL_EXT_texture_env_add
+#endif
 
 //johnfitz -- rendering statistics
 extern int rs_brushpolys, rs_aliaspolys, rs_skypolys, rs_particles, rs_fogpolys;
@@ -319,7 +321,7 @@ extern qboolean r_drawflat_cheatsafe, r_fullbright_cheatsafe, r_lightmap_cheatsa
 
 typedef struct glsl_attrib_binding_s {
 	const char *name;
-	GLuint attrib;
+	uint32_t attrib;
 } glsl_attrib_binding_t;
 
 extern float	map_wateralpha, map_lavaalpha, map_telealpha, map_slimealpha; //ericw
@@ -364,16 +366,16 @@ void R_DrawSpriteModel (entity_t *e);
 void R_DrawTextureChains_Water (qmodel_t *model, entity_t *ent, texchain_t chain);
 
 void R_RenderDlights (void);
-void GL_BuildLightmaps (void);
-void GL_DeleteBModelVertexBuffer (void);
-void GL_BuildBModelVertexBuffer (void);
-void GLMesh_LoadVertexBuffers (void);
-void GLMesh_DeleteVertexBuffers (void);
+// void GL_BuildLightmaps (void);
+// void GL_DeleteBModelVertexBuffer (void);
+// void GL_BuildBModelVertexBuffer (void);
+// void GLMesh_LoadVertexBuffers (void);
+// void GLMesh_DeleteVertexBuffers (void);
 void R_RebuildAllLightmaps (void);
 
 int R_LightPoint (vec3_t p);
 
-void GL_SubdivideSurface (msurface_t *fa);
+// void GL_SubdivideSurface (msurface_t *fa);
 void R_BuildLightMap (msurface_t *surf, byte *dest, int stride);
 void R_RenderDynamicLightmaps (msurface_t *fa);
 void R_UploadLightmaps (void);
@@ -383,17 +385,17 @@ void R_DrawBrushModel_ShowTris (entity_t *e);
 void R_DrawAliasModel_ShowTris (entity_t *e);
 void R_DrawParticles_ShowTris (void);
 
-GLint GL_GetUniformLocation (GLuint *programPtr, const char *name);
-GLuint GL_CreateProgram (const GLchar *vertSource, const GLchar *fragSource, int numbindings, const glsl_attrib_binding_t *bindings);
+// int32_t GL_GetUniformLocation (GLuint *programPtr, const char *name);
+// uint32_t GL_CreateProgram (const GLchar *vertSource, const GLchar *fragSource, int numbindings, const glsl_attrib_binding_t *bindings);
 void R_DeleteShaders (void);
 
-void GLWorld_CreateShaders (void);
-void GLAlias_CreateShaders (void);
-void GL_DrawAliasShadow (entity_t *e);
+// void GLWorld_CreateShaders (void);
+// void GLAlias_CreateShaders (void);
+// void GL_DrawAliasShadow (entity_t *e);
 void DrawGLTriangleFan (glpoly_t *p);
 void DrawGLPoly (glpoly_t *p);
 void DrawWaterPoly (glpoly_t *p);
-void GL_MakeAliasModelDisplayLists (qmodel_t *m, aliashdr_t *hdr);
+// void GL_MakeAliasModelDisplayLists (qmodel_t *m, aliashdr_t *hdr);
 
 void Sky_Init (void);
 void Sky_ClearAll (void);
@@ -410,14 +412,14 @@ void R_ChainSurface (msurface_t *surf, texchain_t chain);
 void R_DrawTextureChains (qmodel_t *model, entity_t *ent, texchain_t chain);
 void R_DrawWorld_Water (void);
 
-void GL_BindBuffer (GLenum target, GLuint buffer);
-void GL_ClearBufferBindings ();
+// void GL_BindBuffer (GLenum target, GLuint buffer);
+// void GL_ClearBufferBindings ();
 
-void GLSLGamma_DeleteTexture (void);
-void GLSLGamma_GammaCorrect (void);
+// void GLSLGamma_DeleteTexture (void);
+// void GLSLGamma_GammaCorrect (void);
 
 void R_ScaleView_DeleteTexture (void);
 
-float GL_WaterAlphaForSurface (msurface_t *fa);
+// float GL_WaterAlphaForSurface (msurface_t *fa);
 
 #endif	/* GLQUAKE_H */

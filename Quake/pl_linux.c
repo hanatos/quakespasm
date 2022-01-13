@@ -22,23 +22,18 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 
 #include "quakedef.h"
-#if defined(SDL_FRAMEWORK) || defined(NO_SDL_CONFIG)
-#if defined(USE_SDL2)
-#include <SDL2/SDL.h>
-#else
-#include <SDL/SDL.h>
-#endif
-#else
-#include "SDL.h"
-#endif
+#include <stdint.h>
 
-static const Uint8 bmp_bytes[] =
+#if 0
+static const uint8_t bmp_bytes[] =
 {
 #include "qs_bmp.h"
 };
+#endif
 
 void PL_SetWindowIcon (void)
 {
+#if 0
 	SDL_RWops	*rwop;
 	SDL_Surface	*icon;
 	Uint32		colorkey;
@@ -60,6 +55,7 @@ void PL_SetWindowIcon (void)
 	SDL_WM_SetIcon(icon, NULL);
 #endif
 	SDL_FreeSurface(icon);
+#endif
 }
 
 void PL_VID_Shutdown (void)

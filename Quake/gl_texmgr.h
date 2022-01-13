@@ -21,6 +21,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #ifndef _GL_TEXMAN_H
 #define _GL_TEXMAN_H
+#include <stdint.h>
 
 //gl_texmgr.h -- fitzquake's texture manager. manages opengl texture images
 
@@ -45,7 +46,7 @@ typedef uintptr_t src_offset_t;
 
 typedef struct gltexture_s {
 //managed by texture manager
-	GLuint			texnum;
+	uint32_t texnum;
 	struct gltexture_s	*next;
 	qmodel_t		*owner;
 //managed by image loading
@@ -100,11 +101,11 @@ int TexMgr_PadConditional (int s);
 
 // TEXTURE BINDING & TEXTURE UNIT SWITCHING
 
-void GL_SelectTexture (GLenum target);
-void GL_DisableMultitexture (void); //selects texture unit 0
-void GL_EnableMultitexture (void); //selects texture unit 1
-void GL_Bind (gltexture_t *texture);
-void GL_ClearBindings (void);
+// void GL_SelectTexture (GLenum target);
+// void GL_DisableMultitexture (void); //selects texture unit 0
+// void GL_EnableMultitexture (void); //selects texture unit 1
+// void GL_Bind (gltexture_t *texture);
+// void GL_ClearBindings (void);
 
 #endif	/* _GL_TEXMAN_H */
 

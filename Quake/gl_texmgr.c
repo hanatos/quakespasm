@@ -23,6 +23,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 //gl_texmgr.c -- fitzquake's texture manager. manages opengl texture images
 
 #include "quakedef.h"
+#include <stdint.h>
 
 const int	gl_solid_format = 3;
 const int	gl_alpha_format = 4;
@@ -31,7 +32,7 @@ static cvar_t	gl_texturemode = {"gl_texturemode", "", CVAR_ARCHIVE};
 static cvar_t	gl_texture_anisotropy = {"gl_texture_anisotropy", "1", CVAR_ARCHIVE};
 static cvar_t	gl_max_size = {"gl_max_size", "0", CVAR_NONE};
 static cvar_t	gl_picmip = {"gl_picmip", "0", CVAR_NONE};
-static GLint	gl_hardware_maxsize;
+static int32_t gl_hardware_maxsize;
 
 #define	MAX_GLTEXTURES	4096
 static int numgltextures;
