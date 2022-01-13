@@ -1048,12 +1048,14 @@ void M_AdjustSliders (int dir)
 		else if (f > 1)	f = 1;
 		Cvar_SetValue ("gamma", f);
 		break;
+#if 0
 	case OPT_CONTRAST:	// contrast
 		f = vid_contrast.value + dir * 0.1;
 		if (f < 1)	f = 1;
 		else if (f > 2)	f = 2;
 		Cvar_SetValue ("contrast", f);
 		break;
+#endif
 	case OPT_MOUSESPEED:	// mouse speed
 		f = sensitivity.value + dir * 0.5;
 		if (f > 11)	f = 11;
@@ -1196,10 +1198,12 @@ void M_Options_Draw (void)
 	r = (1.0 - vid_gamma.value) / 0.5;
 	M_DrawSlider (220, 32 + 8*OPT_GAMMA, r);
 
+#if 0
 	// OPT_CONTRAST:
 	M_Print (16, 32 + 8*OPT_CONTRAST,	"              Contrast");
 	r = vid_contrast.value - 1.0;
 	M_DrawSlider (220, 32 + 8*OPT_CONTRAST, r);
+#endif
 	
 	// OPT_MOUSESPEED:
 	M_Print (16, 32 + 8*OPT_MOUSESPEED,	"           Mouse Speed");

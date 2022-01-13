@@ -177,10 +177,9 @@ MUSIC_OBJS:= bgmusic.o \
 	snd_umx.o
 COMOBJ_SND := snd_dma.o snd_mix.o snd_mem.o $(MUSIC_OBJS)
 SYSOBJ_NET := net_bsd.o net_udp.o
-SYSOBJ_SYS := pl_linux.o
+SYSOBJ_SYS := pl_linux.o vid.o
 SYSOBJ_RES :=
 
-# XXX don't want to build these:
 GLOBJS = \
  	gl_refrag.o \
  	gl_rlight.o \
