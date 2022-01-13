@@ -52,6 +52,7 @@ LDFLAGS =
 DFLAGS ?=
 CFLAGS ?= -Wall -Wno-trigraphs
 CFLAGS += $(CPUFLAGS)
+CFLAGS += -fPIC
 ifneq ($(DEBUG),0)
 DFLAGS += -DDEBUG
 CFLAGS += -g
@@ -156,7 +157,7 @@ DEFAULT_TARGET := libquakespasm.a
 # rules
 # ---------------------------
 
-%.o:	%.c
+%.o:	%.c Makefile
 	$(CC) $(DFLAGS) -c $(CFLAGS) -o $@ $<
 
 # ----------------------------------------------------------------------------
