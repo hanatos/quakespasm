@@ -37,6 +37,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifdef DO_USERDIRS
 #include <pwd.h>
 #endif
+#include <assert.h>
 
 
 qboolean		isDedicated;
@@ -370,6 +371,8 @@ void Sys_Error (const char *error, ...)
 	va_start (argptr, error);
 	q_vsnprintf (text, sizeof(text), error, argptr);
 	va_end (argptr);
+
+  assert(0);
 
 	fputs (errortxt1, stderr);
 	Host_Shutdown ();
