@@ -231,6 +231,7 @@ extern QS_PFNGLUNIFORM1IPROC GL_Uniform1iFunc;
 extern QS_PFNGLUNIFORM1FPROC GL_Uniform1fFunc;
 extern QS_PFNGLUNIFORM3FPROC GL_Uniform3fFunc;
 extern QS_PFNGLUNIFORM4FPROC GL_Uniform4fFunc;
+#endif
 extern	qboolean	gl_glsl_able;
 extern	qboolean	gl_glsl_gamma_able;
 extern	qboolean	gl_glsl_alias_able;
@@ -239,6 +240,7 @@ extern	qboolean	gl_glsl_alias_able;
 //ericw -- NPOT texture support
 extern	qboolean	gl_texture_NPOT;
 
+#if 0
 //johnfitz -- polygon offset
 #define OFFSET_BMODEL 1
 #define OFFSET_NONE 0

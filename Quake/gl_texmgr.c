@@ -32,7 +32,7 @@ const int	gl_alpha_format = 4;
 // static cvar_t	gl_texture_anisotropy = {"gl_texture_anisotropy", "1", CVAR_ARCHIVE};
 static cvar_t	gl_max_size = {"gl_max_size", "0", CVAR_NONE};
 static cvar_t	gl_picmip = {"gl_picmip", "0", CVAR_NONE};
-// static int32_t gl_hardware_maxsize;
+static int32_t gl_hardware_maxsize;
 
 #define	MAX_GLTEXTURES	4096
 static int numgltextures;
@@ -657,7 +657,6 @@ void TexMgr_Init (void)
 ================================================================================
 */
 
-#if 0
 /*
 ================
 TexMgr_Pad -- return smallest power of two greater than or equal to s
@@ -699,6 +698,7 @@ int TexMgr_PadConditional (int s)
 		return s;
 }
 
+#if 0
 /*
 ================
 TexMgr_MipMapW
