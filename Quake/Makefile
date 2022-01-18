@@ -6,7 +6,7 @@
 # "make DO_USERDIRS=1" to enable user directories support
 
 # Enable/Disable user directories support
-DO_USERDIRS=0
+DO_USERDIRS=1
 
 ### Enable/Disable codecs for streaming music support
 USE_CODEC_WAVE=1
