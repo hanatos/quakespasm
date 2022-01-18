@@ -368,15 +368,13 @@ Original code by MH from RMQEngine
 */
 void GL_MakeAliasModelDisplayLists_VBO (void)
 {
-#if 0
 	int i, j;
 	int maxverts_vbo;
 	trivertx_t *verts;
 	unsigned short *indexes;
 	aliasmesh_t *desc;
 
-	if (!gl_glsl_alias_able)
-		return;
+	// if (!gl_glsl_alias_able) return;
 
 	// first, copy the verts onto the hunk
 	verts = (trivertx_t *) Hunk_Alloc (paliashdr->numposes * paliashdr->numverts * sizeof(trivertx_t));
@@ -440,8 +438,7 @@ void GL_MakeAliasModelDisplayLists_VBO (void)
 	}
 	
 	// upload immediately
-	GLMesh_LoadVertexBuffer (aliasmodel, pheader);
-#endif
+	// GLMesh_LoadVertexBuffer (aliasmodel, pheader);
 }
 
 #define NUMVERTEXNORMALS	 162
