@@ -807,7 +807,6 @@ BuildSurfaceDisplayList -- called at level load time
 */
 void BuildSurfaceDisplayList (msurface_t *fa)
 {
-  fprintf(stderr, "bulid display list\n");
 	int			i, lindex, lnumverts;
 	medge_t		*pedges, *r_pedge;
 	float		*vec;
