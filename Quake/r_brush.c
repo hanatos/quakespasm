@@ -807,6 +807,7 @@ BuildSurfaceDisplayList -- called at level load time
 */
 void BuildSurfaceDisplayList (msurface_t *fa)
 {
+  fprintf(stderr, "bulid display list\n");
 	int			i, lindex, lnumverts;
 	medge_t		*pedges, *r_pedge;
 	float		*vec;
@@ -890,7 +891,6 @@ with all the surfaces from all brush models
 */
 void GL_BuildLightmaps (void)
 {
-#if 0
 	char	name[24];
 	int		i, j;
 	struct lightmap_s *lm;
@@ -906,14 +906,14 @@ void GL_BuildLightmaps (void)
 	last_lightmap_allocated = 0;
 	lightmap_count = 0;
 
-	gl_lightmap_format = GL_RGBA;//FIXME: hardcoded for now!
+	gl_lightmap_format = 4;// GL_RGBA;//FIXME: hardcoded for now!
 
 	switch (gl_lightmap_format)
 	{
-	case GL_RGBA:
+	case 4://GL_RGBA:
 		lightmap_bytes = 4;
 		break;
-	case GL_BGRA:
+	case 5://GL_BGRA:
 		lightmap_bytes = 4;
 		break;
 	default:
@@ -966,7 +966,6 @@ void GL_BuildLightmaps (void)
 	if (i > 64)
 		Con_DWarning("%i lightmaps exceeds standard limit of 64.\n",i);
 	//johnfitz
-#endif
 }
 
 #if 0
@@ -1055,6 +1054,7 @@ void GL_BuildBModelVertexBuffer (void)
 // invalidate the cached bindings
 	GL_ClearBufferBindings ();
 }
+#endif
 
 /*
 ===============
@@ -1141,7 +1141,6 @@ void R_AddDynamicLights (msurface_t *surf)
 	}
 }
 
-
 /*
 ===============
 R_BuildLightMap -- johnfitz -- revised for lit support via lordhavoc
@@ -1205,7 +1204,7 @@ void R_BuildLightMap (msurface_t *surf, byte *dest, int stride)
 // store:
 	switch (gl_lightmap_format)
 	{
-	case GL_RGBA:
+  case 4://GL_RGBA:
 		stride -= smax * 4;
 		bl = blocklights;
 		for (i=0 ; i<tmax ; i++, dest += stride)
@@ -1231,7 +1230,7 @@ void R_BuildLightMap (msurface_t *surf, byte *dest, int stride)
 			}
 		}
 		break;
-	case GL_BGRA:
+  case 5://GL_BGRA:
 		stride -= smax * 4;
 		bl = blocklights;
 		for (i=0 ; i<tmax ; i++, dest += stride)
@@ -1261,6 +1260,7 @@ void R_BuildLightMap (msurface_t *surf, byte *dest, int stride)
 		Sys_Error ("R_BuildLightMap: bad lightmap format");
 	}
 }
+#if 0
 
 /*
 ===============

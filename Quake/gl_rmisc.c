@@ -386,7 +386,7 @@ void R_NewMap (void)
 	r_viewleaf = NULL;
 	R_ClearParticles ();
 
-	// GL_BuildLightmaps ();
+	GL_BuildLightmaps ();
 	// GL_BuildBModelVertexBuffer ();
 	//ericw -- no longer load alias models into a VBO here, it's done in Mod_LoadAliasModel
 
