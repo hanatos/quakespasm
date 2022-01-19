@@ -342,11 +342,11 @@ gltexture_t *TexMgr_NewTexture (void)
 	active_gltextures = glt;
 
 	// glGenTextures(1, &glt->texnum);
-	numgltextures++;
+  glt->texnum = numgltextures++; // jo -- just keep counting
 	return glt;
 }
 
-// static void GL_DeleteTexture (gltexture_t *texture);
+static void GL_DeleteTexture (gltexture_t *texture);
 
 //ericw -- workaround for preventing TexMgr_FreeTexture during TexMgr_ReloadImages
 static qboolean in_reload_images;
@@ -375,7 +375,7 @@ void TexMgr_FreeTexture (gltexture_t *kill)
 		kill->next = free_gltextures;
 		free_gltextures = kill;
 
-		// GL_DeleteTexture(kill);
+		GL_DeleteTexture(kill);
 		numgltextures--;
 		return;
 	}
@@ -388,7 +388,7 @@ void TexMgr_FreeTexture (gltexture_t *kill)
 			kill->next = free_gltextures;
 			free_gltextures = kill;
 
-			// GL_DeleteTexture(kill);
+			GL_DeleteTexture(kill);
 			numgltextures--;
 			return;
 		}
@@ -440,14 +440,12 @@ TexMgr_DeleteTextureObjects
 */
 void TexMgr_DeleteTextureObjects (void)
 {
-#if 0
 	gltexture_t *glt;
 
 	for (glt = active_gltextures; glt; glt = glt->next)
 	{
 		GL_DeleteTexture (glt);
 	}
-#endif
 }
 
 /*
@@ -1018,8 +1016,12 @@ static byte *TexMgr_PadImageH (byte *in, int width, int height, byte padbyte)
 TexMgr_LoadImage32 -- handles 32bit source data
 ================
 */
+void QS_texture_load(gltexture_t *glt, unsigned *data); // jo -- forward declare the vkdt module interface function
 static void TexMgr_LoadImage32 (gltexture_t *glt, unsigned *data)
 {
+  // jo -- LoadImage8 calls into this, and we don't care about lightmaps.
+  // this means this is the only point where we need to register the texture:
+  QS_texture_load(glt, data); // this is vkdt code and linkage will be provided in the module there!
 #if 0
 	int	internalformat,	miplevel, mipwidth, mipheight, picmip;
 
@@ -1516,6 +1518,7 @@ void GL_Bind (gltexture_t *texture)
 	}
 }
 
+#endif
 /*
 ================
 GL_DeleteTexture -- ericw
@@ -1526,14 +1529,15 @@ from our per-TMU cached texture binding table.
 */
 static void GL_DeleteTexture (gltexture_t *texture)
 {
-	glDeleteTextures (1, &texture->texnum);
+	// glDeleteTextures (1, &texture->texnum);
 
-	if (texture->texnum == currenttexture[0]) currenttexture[0] = GL_UNUSED_TEXTURE;
-	if (texture->texnum == currenttexture[1]) currenttexture[1] = GL_UNUSED_TEXTURE;
-	if (texture->texnum == currenttexture[2]) currenttexture[2] = GL_UNUSED_TEXTURE;
+	// if (texture->texnum == currenttexture[0]) currenttexture[0] = GL_UNUSED_TEXTURE;
+	// if (texture->texnum == currenttexture[1]) currenttexture[1] = GL_UNUSED_TEXTURE;
+	// if (texture->texnum == currenttexture[2]) currenttexture[2] = GL_UNUSED_TEXTURE;
 
-	texture->texnum = 0;
+	texture->texnum = -1u;
 }
+#if 0
 
 /*
 ================
