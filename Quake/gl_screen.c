@@ -1059,6 +1059,27 @@ needs almost the entire 256k of stack space!
 */
 void SCR_UpdateScreen (void)
 {
+#if 1 // jo -- minimum to compute refdef/camera pos
+	vid.numpages = (gl_triplebuffer.value) ? 3 : 2;
+
+	if (scr_disabled_for_loading)
+	{
+		if (realtime - scr_disabled_time > 60)
+		{
+			scr_disabled_for_loading = false;
+			Con_Printf ("load failed.\n");
+		}
+		else
+			return;
+	}
+
+	if (!scr_initialized || !con_initialized)
+		return;				// not initialized yet
+	SCR_SetUpToDrawConsole ();
+
+	V_RenderView ();
+
+#endif
 #if 0
 	vid.numpages = (gl_triplebuffer.value) ? 3 : 2;
 

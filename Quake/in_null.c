@@ -39,7 +39,8 @@ void IN_SendKeyEvents (void) {}
 void IN_UpdateInputMode (void) {}
 // do stuff if input mode (text/non-text) changes matter to the keyboard driver
 
-void IN_Move (usercmd_t *cmd) {}
+// vkdt needs to implement this:
+// void IN_Move (usercmd_t *cmd) {}
 // add additional movement on top of the keyboard move cmd
 
 void IN_ClearStates (void) {}
