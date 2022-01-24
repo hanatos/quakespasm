@@ -27,9 +27,6 @@ qboolean SNDDMA_Init (dma_t *dma)
 	memset ((void *) dma, 0, sizeof(dma_t));
 	shm = dma;
 	/* Fill the audio DMA information block */
-	/* Since we passed NULL as the 'obtained' spec to SDL_OpenAudio(),
-	 * SDL will convert to hardware format for us if needed, hence we
-	 * directly use the desired values here. */
 	shm->samplebits = 16;
 	shm->signed8 = 0;
 	shm->speed = 44100;
@@ -53,7 +50,7 @@ qboolean SNDDMA_Init (dma_t *dma)
 
 int SNDDMA_GetDMAPos (void)
 {
-	return 0;
+  return shm->samplepos;
 }
 
 void SNDDMA_Shutdown (void)
