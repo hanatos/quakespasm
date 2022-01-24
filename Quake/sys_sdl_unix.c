@@ -404,8 +404,11 @@ void Sys_Quit (void)
 double Sys_DoubleTime (void)
 {
   // not super accurate, but whatever
-  return clock() / (double) CLOCKS_PER_SEC;
+  // return clock() / (double) CLOCKS_PER_SEC;
 	// return SDL_GetTicks() / 1000.0;
+  struct timeval time;
+  gettimeofday(&time, NULL);
+  return time.tv_sec - 1290608000 + (1.0/1000000.0)*time.tv_usec;
 }
 
 const char *Sys_ConsoleInput (void)
