@@ -342,7 +342,6 @@ gltexture_t *TexMgr_NewTexture (void)
 	active_gltextures = glt;
 
 	// glGenTextures(1, &glt->texnum);
-  glt->texnum = numgltextures++; // jo -- just keep counting
 	return glt;
 }
 
@@ -614,8 +613,12 @@ void TexMgr_Init (void)
 	free_gltextures = (gltexture_t *) Hunk_AllocName (MAX_GLTEXTURES * sizeof(gltexture_t), "gltextures");
 	active_gltextures = NULL;
 	for (i = 0; i < MAX_GLTEXTURES - 1; i++)
+  {
 		free_gltextures[i].next = &free_gltextures[i+1];
+    free_gltextures[i].texnum = i; // jo -- fixed slot
+  }
 	free_gltextures[i].next = NULL;
+	free_gltextures[i].texnum = i;
 	numgltextures = 0;
 
 	// palette
@@ -1535,7 +1538,7 @@ static void GL_DeleteTexture (gltexture_t *texture)
 	// if (texture->texnum == currenttexture[1]) currenttexture[1] = GL_UNUSED_TEXTURE;
 	// if (texture->texnum == currenttexture[2]) currenttexture[2] = GL_UNUSED_TEXTURE;
 
-	texture->texnum = -1u;
+	// texture->texnum = -1u;
 }
 #if 0
 
