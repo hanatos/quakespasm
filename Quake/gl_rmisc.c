@@ -318,10 +318,13 @@ R_ParseWorldspawn
 called at map load
 =============
 */
+extern void QS_worldspawn();
 static void R_ParseWorldspawn (void)
 {
 	char key[128], value[4096];
 	const char *data;
+
+  QS_worldspawn(); // let outside engine know stuff changed
 
 	map_wateralpha = r_wateralpha.value;
 	map_lavaalpha = r_lavaalpha.value;
