@@ -42,8 +42,7 @@ quakeparms_t *host_parms;
 qboolean	host_initialized;		// true if into command execution
 
 double		host_frametime;
-double		realtime;				// without any filtering or bounding
-double		oldrealtime;			// last frame run
+double         realtime;                               // without any filtering or bounding
 
 int		host_framecount;
 
@@ -572,16 +571,26 @@ qboolean Host_FilterTime (float time)
 {
 	float maxfps; //johnfitz
 
-	realtime += time;
+  // jo -- the old system to track 'realtime' is not reliable because we may
+  // have been paused from the outside. thus we'll sample whether to run the
+  // frame or not based on the delta time only:
+  static uint32_t seed = 19937;
 
 	//johnfitz -- max fps cvar
 	maxfps = CLAMP (10.0, host_maxfps.value, 1000.0);
-	if (!cls.timedemo && realtime - oldrealtime < 1.0/maxfps)
-		return false; // framerate is too high
+	if (!cls.timedemo && time < 1.0/maxfps)
+  {
+    seed ^= seed << 13;
+    seed ^= seed >> 17;
+    seed ^= seed << 5;
+    double rand = seed / 4294967296.0;
+    if(time < rand / maxfps)
+      return false; // framerate is too high
+  }
 	//johnfitz
+  realtime += time;
 
-	host_frametime = realtime - oldrealtime;
-	oldrealtime = realtime;
+	host_frametime = time;
 
 	//johnfitz -- host_timescale is more intuitive than host_framerate
 	if (host_timescale.value > 0)
@@ -686,8 +695,7 @@ void _Host_Frame (float time)
 	rand ();
 
 // decide the simulation time
-	if (!Host_FilterTime (time))
-		return;			// don't run too fast, or packets will flood out
+	if (!Host_FilterTime (time)) return;			// don't run too fast, or packets will flood out
 
 // get new key events
 	Key_UpdateForDest ();
