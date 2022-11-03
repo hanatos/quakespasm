@@ -363,6 +363,7 @@ void R_UpdateWarpTextures (void);
 void R_DrawWorld (void);
 void R_DrawAliasModel (entity_t *e);
 void R_DrawBrushModel (entity_t *e);
+mspriteframe_t *R_GetSpriteFrame (entity_t *currentent);
 void R_DrawSpriteModel (entity_t *e);
 
 void R_DrawTextureChains_Water (qmodel_t *model, entity_t *ent, texchain_t chain);
