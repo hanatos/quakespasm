@@ -613,6 +613,21 @@ void Mod_LoadTextures (lump_t *l)
 					if (data)
 						tx->fullbright = TexMgr_LoadImage (loadmodel, filename2, fwidth, fheight,
 							SRC_RGBA, data, filename, 0, TEXPREF_MIPMAP | extraflags );
+
+					// now try to load the qrp normal map
+					Hunk_FreeToLowMark (mark);
+					q_snprintf (filename2, sizeof(filename2), "%s_norm", filename);
+					data = Image_LoadImage (filename2, &fwidth, &fheight);
+					if (data)
+						tx->norm = TexMgr_LoadImage (loadmodel, filename2, fwidth, fheight,
+							SRC_RGBA, data, filename, 0, TEXPREF_MIPMAP | extraflags );
+					// now try to load the qrp gloss map
+					Hunk_FreeToLowMark (mark);
+					q_snprintf (filename2, sizeof(filename2), "%s_gloss", filename);
+					data = Image_LoadImage (filename2, &fwidth, &fheight);
+					if (data)
+						tx->gloss = TexMgr_LoadImage (loadmodel, filename2, fwidth, fheight,
+							SRC_RGBA, data, filename, 0, TEXPREF_MIPMAP | extraflags );
 				}
 				else //use the texture from the bsp file
 				{

@@ -90,6 +90,8 @@ typedef struct texture_s
 	unsigned			shift;		// Q64
 	struct gltexture_s	*gltexture; //johnfitz -- pointer to gltexture
 	struct gltexture_s	*fullbright; //johnfitz -- fullbright mask texture
+	struct gltexture_s	*norm;       // jo -- qrp normal/displacement map
+	struct gltexture_s	*gloss;      // jo -- qrp gloss map
 	struct gltexture_s	*warpimage; //johnfitz -- for water animation
 	qboolean			update_warp; //johnfitz -- update warp this frame
 	struct msurface_s	*texturechains[2];	// for texture chains
