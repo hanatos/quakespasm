@@ -371,6 +371,8 @@ typedef struct {
 	int					commands;	// gl command list with embedded s/t
 	struct gltexture_s	*gltextures[MAX_SKINS][4]; //johnfitz
 	struct gltexture_s	*fbtextures[MAX_SKINS][4]; //johnfitz
+	struct gltexture_s	*gstextures[MAX_SKINS][4]; // jo: glossmap
+	struct gltexture_s	*nmtextures[MAX_SKINS][4]; // jo: normals
 	int					texels[MAX_SKINS];	// only for player skins
 	maliasframedesc_t	frames[1];	// variable sized
 } aliashdr_t;
