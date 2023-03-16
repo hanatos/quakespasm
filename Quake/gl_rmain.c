@@ -534,8 +534,8 @@ R_SetupView -- johnfitz -- this is the stuff that needs to be done once per fram
 void R_SetupView (void)
 {
 	// Need to do those early because we now update dynamic light maps during R_MarkSurfaces
-	R_PushDlights ();
-	R_AnimateLight ();
+	// R_PushDlights (); // [jo] disabled for ray traced version
+	// R_AnimateLight ();
 	r_framecount++;
 
 	Fog_SetupFrame (); //johnfitz
@@ -544,6 +544,7 @@ void R_SetupView (void)
 	VectorCopy (r_refdef.vieworg, r_origin);
 	AngleVectors (r_refdef.viewangles, vpn, vright, vup);
 
+  return; // [jo]
 // current viewleaf
 	r_oldviewleaf = r_viewleaf;
 	r_viewleaf = Mod_PointInLeaf (r_origin, cl.worldmodel);
