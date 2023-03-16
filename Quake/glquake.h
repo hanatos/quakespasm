@@ -350,6 +350,7 @@ void R_StoreEfrags (efrag_t **ppefrag);
 qboolean R_CullModelForEntity (entity_t *e);
 void R_RotateForEntity (vec3_t origin, vec3_t angles);
 void R_MarkLights (dlight_t *light, int num, mnode_t *node);
+void R_SetupView();
 
 void R_InitParticles (void);
 void R_DrawParticles (void);
