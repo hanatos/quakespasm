@@ -35,16 +35,16 @@ ALIAS MODEL DISPLAY LIST GENERATION
 qmodel_t	*aliasmodel;
 aliashdr_t	*paliashdr;
 
-int		used[8192]; // qboolean
+int		used[20000]; // qboolean
 
 // the command list holds counts and s/t values that are valid for
 // every frame
-int		commands[8192];
+int		commands[20000];
 int		numcommands;
 
 // all frames will have their vertexes rearranged and expanded
 // so they are in the order expected by the command list
-int		vertexorder[8192];
+int		vertexorder[20000];
 int		numorder;
 
 int		allverts, alltris;
