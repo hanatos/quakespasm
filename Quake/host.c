@@ -564,7 +564,7 @@ void Host_ClearMemory (void)
 ===================
 Host_FilterTime
 
-Returns false if the time is long to run a frame
+Returns false if the time is too long to run a frame
 ===================
 */
 qboolean Host_FilterTime (float time)
@@ -574,9 +574,10 @@ qboolean Host_FilterTime (float time)
 		// Time to long. Maybe game was paused
 		return false;
 	}
-  
+
 	//johnfitz
   realtime += time;
+
 	host_frametime = time;
 
 	//johnfitz -- host_timescale is more intuitive than host_framerate
