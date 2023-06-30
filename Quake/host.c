@@ -564,29 +564,17 @@ void Host_ClearMemory (void)
 ===================
 Host_FilterTime
 
-Returns false if the time is too short to run a frame
+Returns false if the time is too long to run a frame
 ===================
 */
 qboolean Host_FilterTime (float time)
 {
-	float maxfps; //johnfitz
+	float minfps = 1; //LDAP
+	if (time > 1. / minfps) {
+		// Time to long. Maybe game was paused
+		return false;
+	}
 
-  // jo -- the old system to track 'realtime' is not reliable because we may
-  // have been paused from the outside. thus we'll sample whether to run the
-  // frame or not based on the delta time only:
-  static uint32_t seed = 19937;
-
-	//johnfitz -- max fps cvar
-	maxfps = CLAMP (10.0, host_maxfps.value, 1000.0);
-	if (!cls.timedemo && time < 1.0/maxfps)
-  {
-    seed ^= seed << 13;
-    seed ^= seed >> 17;
-    seed ^= seed << 5;
-    double rand = seed / 4294967296.0;
-    if(time < rand / maxfps)
-      return false; // framerate is too high
-  }
 	//johnfitz
   realtime += time;
 
