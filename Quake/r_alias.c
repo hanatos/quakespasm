@@ -57,16 +57,6 @@ qboolean	overbright; //johnfitz
 
 qboolean shading = true; //johnfitz -- if false, disable vertex shading for various reasons (fullbright, r_lightmap, showtris, etc)
 
-//johnfitz -- struct for passing lerp information to drawing functions
-typedef struct {
-	short pose1;
-	short pose2;
-	float blend;
-	vec3_t origin;
-	vec3_t angles;
-} lerpdata_t;
-//johnfitz
-
 #if 0
 static GLuint r_alias_program;
 
@@ -404,15 +394,14 @@ void GL_DrawAliasFrame (aliashdr_t *paliashdr, lerpdata_t lerpdata)
 
 	rs_aliaspasses += paliashdr->numtris;
 }
-
+#endif
 /*
 =================
 R_SetupAliasFrame -- johnfitz -- rewritten to support lerping
 =================
 */
-void R_SetupAliasFrame (aliashdr_t *paliashdr, int frame, lerpdata_t *lerpdata)
+void R_SetupAliasFrame (entity_t *e, aliashdr_t *paliashdr, int frame, lerpdata_t *lerpdata)
 {
-	entity_t		*e = currententity;
 	int				posenum, numposes;
 
 	if ((frame >= paliashdr->numframes) || (frame < 0))
@@ -473,6 +462,7 @@ void R_SetupAliasFrame (aliashdr_t *paliashdr, int frame, lerpdata_t *lerpdata)
 		lerpdata->pose2 = posenum;
 	}
 }
+
 
 /*
 =================
@@ -536,6 +526,7 @@ void R_SetupEntityTransform (entity_t *e, lerpdata_t *lerpdata)
 	}
 }
 
+#if 0
 /*
 =================
 R_SetupAliasLighting -- johnfitz -- broken out from R_DrawAliasModel and rewritten
