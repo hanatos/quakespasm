@@ -293,7 +293,7 @@ static int PR_EnterFunction (dfunction_t *f)
 	// save off any locals that the new function steps on
 	c = f->locals;
 	if (localstack_used + c > LOCALSTACK_SIZE)
-		PR_RunError("PR_ExecuteProgram: locals stack overflow\n");
+		PR_RunError("PR_ExecuteProgram: locals stack overflow");
 
 	for (i = 0; i < c ; i++)
 		localstack[localstack_used + i] = ((int *)pr_globals)[f->parm_start + i];
@@ -383,7 +383,7 @@ void PR_ExecuteProgram (func_t fnum)
     {
 	st++;	/* next statement */
 
-	if (++profile > 100000)
+	if (++profile > 0x1000000) /* was 100000 */
 	{
 		pr_xstatement = st - pr_statements;
 		PR_RunError("runaway loop error");
@@ -651,4 +651,3 @@ void PR_ExecuteProgram (func_t fnum)
 #undef OPA
 #undef OPB
 #undef OPC
-

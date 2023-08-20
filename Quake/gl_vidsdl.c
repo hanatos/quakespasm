@@ -97,6 +97,7 @@ modestate_t	modestate = MS_UNINIT;
 qboolean	scr_skipupdate;
 
 qboolean gl_mtexable = false;
+qboolean gl_packed_pixels = false;
 qboolean gl_texture_env_combine = false; //johnfitz
 qboolean gl_texture_env_add = false; //johnfitz
 qboolean gl_swap_control = false; //johnfitz
@@ -142,6 +143,8 @@ QS_PFNGLUNIFORM1IPROC GL_Uniform1iFunc = NULL; //ericw
 QS_PFNGLUNIFORM1FPROC GL_Uniform1fFunc = NULL; //ericw
 QS_PFNGLUNIFORM3FPROC GL_Uniform3fFunc = NULL; //ericw
 QS_PFNGLUNIFORM4FPROC GL_Uniform4fFunc = NULL; //ericw
+
+QS_PFNGENERATEMIPMAP GL_GenerateMipmap = NULL;
 
 //====================================
 
@@ -365,12 +368,12 @@ static int VID_GetCurrentRefreshRate (void)
 #if defined(USE_SDL2)
 	SDL_DisplayMode mode;
 	int current_display;
-	
+
 	current_display = SDL_GetWindowDisplayIndex(draw_context);
-	
+
 	if (0 != SDL_GetCurrentDisplayMode(current_display, &mode))
 		return DEFAULT_REFRESHRATE;
-	
+
 	return mode.refresh_rate;
 #else
 	// SDL1.2 doesn't support refresh rates
@@ -511,7 +514,7 @@ static SDL_DisplayMode *VID_SDL2_GetDisplayMode(int width, int height, int refre
 	{
 		if (SDL_GetDisplayMode(0, i, &mode) != 0)
 			continue;
-		
+
 		if (mode.w == width && mode.h == height
 			&& SDL_BITSPERPIXEL(mode.format) == bpp
 			&& mode.refresh_rate == refreshrate)
@@ -617,7 +620,7 @@ static qboolean VID_SetMode (int width, int height, int refreshrate, int bpp, qb
 
 		if (vid_borderless.value)
 			flags |= SDL_WINDOW_BORDERLESS;
-		
+
 		draw_context = SDL_CreateWindow (caption, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, width, height, flags);
 		if (!draw_context) { // scale back fsaa
 			SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 0);
@@ -668,6 +671,7 @@ static qboolean VID_SetMode (int width, int height, int refreshrate, int bpp, qb
 	}
 
 	SDL_ShowWindow (draw_context);
+	SDL_RaiseWindow (draw_context);
 
 	/* Create GL context if needed */
 	if (!gl_context) {
@@ -687,7 +691,7 @@ static qboolean VID_SetMode (int width, int height, int refreshrate, int bpp, qb
 		flags |= SDL_FULLSCREEN;
 	if (vid_borderless.value)
 		flags |= SDL_NOFRAME;
-	
+
 	gl_swap_control = true;
 	if (SDL_GL_SetAttribute(SDL_GL_SWAP_CONTROL, (vid_vsync.value) ? 1 : 0) == -1)
 		gl_swap_control = false;
@@ -795,7 +799,7 @@ static void VID_Restart (void)
 				width, height, bpp, refreshrate, fullscreen? "fullscreen" : "windowed");
 		return;
 	}
-	
+
 // ericw -- OS X, SDL1: textures, VBO's invalid after mode change
 //          OS X, SDL2: still valid after mode change
 // To handle both cases, delete all GL objects (textures, VBO, GLSL) now.
@@ -1174,7 +1178,7 @@ static void GL_CheckExtensions (void)
 	{
 		Con_Warning ("texture_non_power_of_two not supported\n");
 	}
-	
+
 	// GLSL
 	//
 	if (COM_CheckParm("-noglsl"))
@@ -1249,6 +1253,7 @@ static void GL_CheckExtensions (void)
 	else if (gl_glsl_able)
 	{
 		gl_glsl_gamma_able = true;
+		Con_Printf("Enabled: GLSL gamma\n");
 	}
 	else
 	{
@@ -1262,10 +1267,56 @@ static void GL_CheckExtensions (void)
 	else if (gl_glsl_able && gl_vbo_able && gl_max_texture_units >= 3)
 	{
 		gl_glsl_alias_able = true;
+		gl_packed_pixels = true;
+		Con_Printf("Enabled: GLSL alias model rendering\n");
+		Con_Printf("Enabled: EXT_packed_pixels\n");
 	}
 	else
 	{
 		Con_Warning ("GLSL alias model rendering not available, using Fitz renderer\n");
+	}
+
+#if 0 /* Disabling for non-GLSL path, needs more surgery. See: https://github.com/sezero/quakespasm/issues/47#issuecomment-1681540278 */
+	// packed_pixels
+	//
+	if (!gl_packed_pixels)
+	{
+		if (GL_ParseExtensionList(gl_extensions, "GL_APPLE_packed_pixels"))
+		{
+			Con_Printf("FOUND: APPLE_packed_pixels\n");
+			gl_packed_pixels = true;
+		}
+		else if (GL_ParseExtensionList(gl_extensions, "GL_EXT_packed_pixels"))
+		{
+			Con_Printf("FOUND: EXT_packed_pixels\n");
+			gl_packed_pixels = true;
+		}
+		else
+		{
+			Con_Warning ("packed_pixels not supported\n");
+		}
+	}
+#endif
+
+	// glGenerateMipmap for warp textures
+	if (COM_CheckParm("-nowarpmipmaps"))
+		Con_Warning ("glGenerateMipmap disabled at command line\n");
+	else
+	{
+		if (gl_version_major >= 3 || GL_ParseExtensionList(gl_extensions, "GL_ARB_framebuffer_object"))
+		{
+			GL_GenerateMipmap = (QS_PFNGENERATEMIPMAP) SDL_GL_GetProcAddress("glGenerateMipmap");
+			if (GL_GenerateMipmap != NULL)
+				Con_Printf ("FOUND: glGenerateMipmap\n");
+		}
+		else if (GL_ParseExtensionList(gl_extensions, "GL_EXT_framebuffer_object"))
+		{
+			GL_GenerateMipmap = (QS_PFNGENERATEMIPMAP) SDL_GL_GetProcAddress("glGenerateMipmapEXT");
+			if (GL_GenerateMipmap != NULL)
+				Con_Printf ("FOUND: glGenerateMipmapEXT\n");
+		}
+		if (GL_GenerateMipmap == NULL)
+			Con_Warning ("glGenerateMipmap not available, liquids won't have mipmaps\n");
 	}
 }
 
@@ -1345,7 +1396,7 @@ static void GL_Init (void)
 
 	GLAlias_CreateShaders ();
 	GLWorld_CreateShaders ();
-	GL_ClearBufferBindings ();	
+	GL_ClearBufferBindings ();
 }
 
 /*
@@ -1383,12 +1434,13 @@ void	VID_Shutdown (void)
 	if (vid_initialized)
 	{
 		VID_Gamma_Shutdown (); //johnfitz
-
+#if defined(USE_SDL2)
+		SDL_GL_DeleteContext(gl_context);
+		gl_context = NULL;
+		SDL_DestroyWindow(draw_context);
+#endif
 		SDL_QuitSubSystem(SDL_INIT_VIDEO);
 		draw_context = NULL;
-#if defined(USE_SDL2)
-		gl_context = NULL;
-#endif
 		PL_VID_Shutdown();
 	}
 }
@@ -1604,7 +1656,7 @@ void	VID_Init (void)
 	Cvar_SetCallback (&vid_fsaa, VID_FSAA_f);
 	Cvar_SetCallback (&vid_desktopfullscreen, VID_Changed_f);
 	Cvar_SetCallback (&vid_borderless, VID_Changed_f);
-	
+
 	Cmd_AddCommand ("vid_unlock", VID_Unlock); //johnfitz
 	Cmd_AddCommand ("vid_restart", VID_Restart); //johnfitz
 	Cmd_AddCommand ("vid_test", VID_Test); //johnfitz
@@ -1686,7 +1738,7 @@ void	VID_Init (void)
 		p = COM_CheckParm("-refreshrate");
 		if (p && p < com_argc-1)
 			refreshrate = Q_atoi(com_argv[p+1]);
-		
+
 		p = COM_CheckParm("-bpp");
 		if (p && p < com_argc-1)
 			bpp = Q_atoi(com_argv[p+1]);
@@ -1975,46 +2027,46 @@ regenerates rate list based on current vid_width, vid_height and vid_bpp
 */
 static void VID_Menu_RebuildRateList (void)
 {
-	int i,j,r;
-	
-	vid_menu_numrates=0;
-	
-	for (i=0;i<nummodes;i++)
+	int i, j, r;
+
+	vid_menu_numrates = 0;
+
+	for (i = 0; i < nummodes; i++)
 	{
 		//rate list is limited to rates available with current width/height/bpp
 		if (modelist[i].width != vid_width.value ||
 		    modelist[i].height != vid_height.value ||
 		    modelist[i].bpp != vid_bpp.value)
 			continue;
-		
+
 		r = modelist[i].refreshrate;
-		
-		for (j=0;j<vid_menu_numrates;j++)
+
+		for (j = 0; j < vid_menu_numrates; j++)
 		{
 			if (vid_menu_rates[j] == r)
 				break;
 		}
-		
-		if (j==vid_menu_numrates)
+
+		if (j == vid_menu_numrates)
 		{
 			vid_menu_rates[j] = r;
 			vid_menu_numrates++;
 		}
 	}
-	
+
 	//if there are no valid fullscreen refreshrates for this width/height, just pick one
 	if (vid_menu_numrates == 0)
 	{
 		Cvar_SetValue ("vid_refreshrate",(float)modelist[0].refreshrate);
 		return;
 	}
-	
+
 	//if vid_refreshrate is not in the new list, change vid_refreshrate
-	for (i=0;i<vid_menu_numrates;i++)
+	for (i = 0; i < vid_menu_numrates; i++)
 		if (vid_menu_rates[i] == (int)(vid_refreshrate.value))
 			break;
-	
-	if (i==vid_menu_numrates)
+
+	if (i == vid_menu_numrates)
 		Cvar_SetValue ("vid_refreshrate",(float)vid_menu_rates[0]);
 }
 
@@ -2105,26 +2157,26 @@ chooses next refresh rate in order, then updates vid_refreshrate cvar
 static void VID_Menu_ChooseNextRate (int dir)
 {
 	int i;
-	
-	for (i=0;i<vid_menu_numrates;i++)
+
+	for (i = 0; i < vid_menu_numrates; i++)
 	{
 		if (vid_menu_rates[i] == vid_refreshrate.value)
 			break;
 	}
-	
-	if (i==vid_menu_numrates) //can't find it in list
+
+	if (i == vid_menu_numrates) //can't find it in list
 	{
 		i = 0;
 	}
 	else
 	{
-		i+=dir;
-		if (i>=vid_menu_numrates)
+		i += dir;
+		if (i >= vid_menu_numrates)
 			i = 0;
-		else if (i<0)
+		else if (i < 0)
 			i = vid_menu_numrates-1;
 	}
-	
+
 	Cvar_SetValue ("vid_refreshrate",(float)vid_menu_rates[i]);
 }
 

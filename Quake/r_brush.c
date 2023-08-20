@@ -238,8 +238,11 @@ void R_DrawSequentialPoly (msurface_t *s)
 	if (s->flags & SURF_DRAWTURB)
 	{
 		if (currententity->alpha == ENTALPHA_DEFAULT)
-			entalpha = CLAMP(0.0, GL_WaterAlphaForSurface(s), 1.0);
-
+		{
+			entalpha = GL_WaterAlphaForSurface(s);
+			if (entalpha > 1.0f) entalpha = 1.0f;
+			else if (entalpha < 0.0f) entalpha = 0.0f;
+		}
 		if (entalpha < 1)
 		{
 			glDepthMask(GL_FALSE);
@@ -554,7 +557,7 @@ void R_DrawBrushModel (entity_t *e)
 		e->origin[1] -= DIST_EPSILON;
 		e->origin[2] -= DIST_EPSILON;
 	}
-	R_RotateForEntity (e->origin, e->angles);
+	R_RotateForEntity (e->origin, e->angles, e->scale);
 	if (gl_zfix.value)
 	{
 		e->origin[0] += DIST_EPSILON;
@@ -622,7 +625,7 @@ void R_DrawBrushModel_ShowTris (entity_t *e)
 
 	glPushMatrix ();
 	e->angles[0] = -e->angles[0];	// stupid quake bug
-	R_RotateForEntity (e->origin, e->angles);
+	R_RotateForEntity (e->origin, e->angles, e->scale);
 	e->angles[0] = -e->angles[0];	// stupid quake bug
 
 	//
@@ -791,6 +794,12 @@ void GL_CreateSurfaceLightmap (msurface_t *surf)
 	int		smax, tmax;
 	byte	*base;
 
+	if (surf->flags & SURF_DRAWTILED)
+	{
+		surf->lightmaptexturenum = -1;
+		return;
+	}
+
 	smax = (surf->extents[0]>>4)+1;
 	tmax = (surf->extents[1]>>4)+1;
 
@@ -810,7 +819,7 @@ void BuildSurfaceDisplayList (msurface_t *fa)
 	int			i, lindex, lnumverts;
 	medge_t		*pedges, *r_pedge;
 	float		*vec;
-	float		s, t;
+	float		s, t, s0, t0, sdiv, tdiv;
 	glpoly_t	*poly;
 
 // reconstruct the polygon
@@ -824,6 +833,20 @@ void BuildSurfaceDisplayList (msurface_t *fa)
 	poly->next = fa->polys;
 	fa->polys = poly;
 	poly->numverts = lnumverts;
+
+	if (fa->flags & SURF_DRAWTURB)
+	{
+		// match Mod_PolyForUnlitSurface
+		s0 = t0 = 0.f;
+		sdiv = tdiv = 128.f;
+	}
+	else
+	{
+		s0 = fa->texinfo->vecs[0][3];
+		t0 = fa->texinfo->vecs[1][3];
+		sdiv = fa->texinfo->texture->width;
+		tdiv = fa->texinfo->texture->height;
+	}
 
 	for (i=0 ; i<lnumverts ; i++)
 	{
@@ -839,11 +862,11 @@ void BuildSurfaceDisplayList (msurface_t *fa)
 			r_pedge = &pedges[-lindex];
 			vec = r_pcurrentvertbase[r_pedge->v[1]].position;
 		}
-		s = DotProduct (vec, fa->texinfo->vecs[0]) + fa->texinfo->vecs[0][3];
-		s /= fa->texinfo->texture->width;
+		s = DotProduct (vec, fa->texinfo->vecs[0]) + s0;
+		s /= sdiv;
 
-		t = DotProduct (vec, fa->texinfo->vecs[1]) + fa->texinfo->vecs[1][3];
-		t /= fa->texinfo->texture->height;
+		t = DotProduct (vec, fa->texinfo->vecs[1]) + t0;
+		t /= tdiv;
 
 		VectorCopy (vec, poly->verts[i]);
 		poly->verts[i][3] = s;
@@ -878,6 +901,10 @@ void BuildSurfaceDisplayList (msurface_t *fa)
 	//johnfitz -- removed gl_keeptjunctions code
 
 	poly->numverts = lnumverts;
+
+	// support r_oldwater 1 on lit water
+	if (fa->flags & SURF_DRAWTURB)
+		GL_SubdivideSurface (fa);
 }
 
 /*
@@ -1150,7 +1177,7 @@ Combine and scale multiple lightmaps into the 8.8 format in blocklights
 void R_BuildLightMap (msurface_t *surf, byte *dest, int stride)
 {
 	int			smax, tmax;
-	int			r,g,b;
+	unsigned		r, g, b;
 	int			i, j, size;
 	byte		*lightmap;
 	unsigned	scale;
@@ -1222,10 +1249,21 @@ void R_BuildLightMap (msurface_t *surf, byte *dest, int stride)
 					g = *bl++ >> 7;
 					b = *bl++ >> 7;
 				}
-				*dest++ = (r > 255)? 255 : r;
-				*dest++ = (g > 255)? 255 : g;
-				*dest++ = (b > 255)? 255 : b;
-				*dest++ = 255;
+				if (gl_packed_pixels)
+				{
+					r = (r > 1023)? 1023 : r;
+					g = (g > 1023)? 1023 : g;
+					b = (b > 1023)? 1023 : b;
+					*(unsigned int*)dest = (r<<22) | (g<<12) | (b<<2) | 3;
+					dest += 4;
+				}
+				else
+				{
+					*dest++ = (r > 255)? 255 : r;
+					*dest++ = (g > 255)? 255 : g;
+					*dest++ = (b > 255)? 255 : b;
+					*dest++ = 255;
+				}
 			}
 		}
 		break;
@@ -1248,10 +1286,21 @@ void R_BuildLightMap (msurface_t *surf, byte *dest, int stride)
 					g = *bl++ >> 7;
 					b = *bl++ >> 7;
 				}
-				*dest++ = (b > 255)? 255 : b;
-				*dest++ = (g > 255)? 255 : g;
-				*dest++ = (r > 255)? 255 : r;
-				*dest++ = 255;
+				if (gl_packed_pixels)
+				{
+					r = (r > 1023)? 1023 : r;
+					g = (g > 1023)? 1023 : g;
+					b = (b > 1023)? 1023 : b;
+					*(unsigned int*)dest = (b<<22) | (g<<12) | (r<<2) | 3;
+					dest += 4;
+				}
+				else
+				{
+					*dest++ = (b > 255)? 255 : b;
+					*dest++ = (g > 255)? 255 : g;
+					*dest++ = (r > 255)? 255 : r;
+					*dest++ = 255;
+				}
 			}
 		}
 		break;
@@ -1270,6 +1319,7 @@ assumes lightmap texture is already bound
 */
 static void R_UploadLightmap(int lmap)
 {
+	const GLenum type = gl_packed_pixels ? GL_UNSIGNED_INT_10_10_10_2 : GL_UNSIGNED_BYTE;
 	struct lightmap_s *lm = &lightmaps[lmap];
 
 	if (!lm->modified)
@@ -1278,7 +1328,7 @@ static void R_UploadLightmap(int lmap)
 	lm->modified = false;
 
 	glTexSubImage2D(GL_TEXTURE_2D, 0, 0, lm->rectchange.t, LMBLOCK_WIDTH, lm->rectchange.h, gl_lightmap_format,
-			GL_UNSIGNED_BYTE, lm->data+lm->rectchange.t*LMBLOCK_WIDTH*lightmap_bytes);
+			type, lm->data + lm->rectchange.t*LMBLOCK_WIDTH*lightmap_bytes);
 	lm->rectchange.l = LMBLOCK_WIDTH;
 	lm->rectchange.t = LMBLOCK_HEIGHT;
 	lm->rectchange.h = 0;
@@ -1308,6 +1358,7 @@ R_RebuildAllLightmaps -- johnfitz -- called when gl_overbright gets toggled
 */
 void R_RebuildAllLightmaps (void)
 {
+	const GLenum type = gl_packed_pixels ? GL_UNSIGNED_INT_10_10_10_2 : GL_UNSIGNED_BYTE;
 	int			i, j;
 	qmodel_t	*mod;
 	msurface_t	*fa;
@@ -1337,7 +1388,7 @@ void R_RebuildAllLightmaps (void)
 	{
 		GL_Bind (lightmaps[i].texture);
 		glTexSubImage2D (GL_TEXTURE_2D, 0, 0, 0, LMBLOCK_WIDTH, LMBLOCK_HEIGHT, gl_lightmap_format,
-				 GL_UNSIGNED_BYTE, lightmaps[i].data);
+				 type, lightmaps[i].data);
 	}
 }
 #endif

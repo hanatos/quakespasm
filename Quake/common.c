@@ -147,6 +147,69 @@ void InsertLinkAfter (link_t *l, link_t *after)
 /*
 ============================================================================
 
+							DYNAMIC VECTORS
+
+============================================================================
+*/
+
+void Vec_Grow (void **pvec, size_t element_size, size_t count)
+{
+	vec_header_t header;
+	if (*pvec)
+		header = VEC_HEADER(*pvec);
+	else
+		header.size = header.capacity = 0;
+
+	if (header.size + count > header.capacity)
+	{
+		void *new_buffer;
+		size_t total_size;
+
+		header.capacity = header.size + count;
+		header.capacity += header.capacity >> 1;
+		if (header.capacity < 16)
+			header.capacity = 16;
+		total_size = sizeof(vec_header_t) + header.capacity * element_size;
+
+		if (*pvec)
+			new_buffer = realloc (((vec_header_t*)*pvec) - 1, total_size);
+		else
+			new_buffer = malloc (total_size);
+		if (!new_buffer)
+			Sys_Error ("Vec_Grow: failed to allocate %lu bytes\n", (unsigned long)total_size);
+
+		*pvec = 1 + (vec_header_t*)new_buffer;
+		VEC_HEADER(*pvec) = header;
+	}
+}
+
+void Vec_Append (void **pvec, size_t element_size, const void *data, size_t count)
+{
+	if (!count)
+		return;
+	Vec_Grow (pvec, element_size, count);
+	memcpy ((byte *)*pvec + VEC_HEADER(*pvec).size, data, count * element_size);
+	VEC_HEADER(*pvec).size += count;
+}
+
+void Vec_Clear (void **pvec)
+{
+	if (*pvec)
+		VEC_HEADER(*pvec).size = 0;
+}
+
+void Vec_Free (void **pvec)
+{
+	if (*pvec)
+	{
+		free(&VEC_HEADER(*pvec));
+		*pvec = NULL;
+	}
+}
+
+/*
+============================================================================
+
 					LIBRARY REPLACEMENT FUNCTIONS
 
 ============================================================================
@@ -969,7 +1032,7 @@ void *SZ_GetSpace (sizebuf_t *buf, int length)
 			Sys_Error ("SZ_GetSpace: %i is > full buffer size", length);
 
 		buf->overflowed = true;
-		Con_Printf ("SZ_GetSpace: overflow");
+		Con_Printf ("SZ_GetSpace: overflow\n");
 		SZ_Clear (buf);
 	}
 
@@ -1305,13 +1368,17 @@ static void COM_CheckRegistered (void)
 		return;
 	}
 
-	Sys_FileRead (h, check, sizeof(check));
+	i = Sys_FileRead (h, check, sizeof(check));
 	COM_CloseFile (h);
+	if (i != (int) sizeof(check))
+		goto corrupt;
 
 	for (i = 0; i < 128; i++)
 	{
 		if (pop[i] != (unsigned short)BigShort (check[i]))
+		{ corrupt:
 			Sys_Error ("Corrupted data file.");
+		}
 	}
 
 	for (i = 0; com_cmdline[i]; i++)
@@ -1604,7 +1671,7 @@ static int COM_FindFile (const char *filename, int *handle, FILE **file,
 	searchpath_t	*search;
 	char		netpath[MAX_OSPATH];
 	pack_t		*pak;
-	int		i, findtime;
+	int		i;
 
 	if (file && handle)
 		Sys_Error ("COM_FindFile: both handle and file set");
@@ -1656,8 +1723,7 @@ static int COM_FindFile (const char *filename, int *handle, FILE **file,
 			}
 
 			q_snprintf (netpath, sizeof(netpath), "%s/%s",search->filename, filename);
-			findtime = Sys_FileTime (netpath);
-			if (findtime == -1)
+			if (! (Sys_FileType(netpath) & FS_ENT_FILE))
 				continue;
 
 			if (path_id)
@@ -1781,7 +1847,7 @@ byte *COM_LoadFile (const char *path, int usehunk, unsigned int *path_id)
 	int		h;
 	byte	*buf;
 	char	base[32];
-	int		len;
+	int	len, nread;
 
 	buf = NULL;	// quiet compiler warning
 
@@ -1825,8 +1891,10 @@ byte *COM_LoadFile (const char *path, int usehunk, unsigned int *path_id)
 
 	((byte *)buf)[len] = 0;
 
-	Sys_FileRead (h, buf, len);
+	nread = Sys_FileRead (h, buf, len);
 	COM_CloseFile (h);
+	if (nread != len)
+		Sys_Error ("COM_LoadFile: Error reading %s", path);
 
 	return buf;
 }
@@ -1875,7 +1943,7 @@ byte *COM_LoadMallocFile_TextMode_OSPath (const char *path, long *len_out)
 	FILE	*f;
 	byte	*data;
 	long	len, actuallen;
-	
+
 	// ericw -- this is used by Host_Loadgame_f. Translate CRLF to LF on load games,
 	// othewise multiline messages have a garbage character at the end of each line.
 	// TODO: could handle in a way that allows loading CRLF savegames on mac/linux
@@ -1883,26 +1951,34 @@ byte *COM_LoadMallocFile_TextMode_OSPath (const char *path, long *len_out)
 	f = fopen (path, "rt");
 	if (f == NULL)
 		return NULL;
-	
+
 	len = COM_filelength (f);
 	if (len < 0)
+	{
+		fclose (f);
 		return NULL;
-	
+	}
+
 	data = (byte *) malloc (len + 1);
 	if (data == NULL)
+	{
+		fclose (f);
 		return NULL;
+	}
 
 	// (actuallen < len) if CRLF to LF translation was performed
 	actuallen = fread (data, 1, len, f);
 	if (ferror(f))
 	{
+		fclose (f);
 		free (data);
 		return NULL;
 	}
 	data[actuallen] = '\0';
-	
+
 	if (len_out != NULL)
 		*len_out = actuallen;
+	fclose (f);
 	return data;
 }
 
@@ -1952,8 +2028,8 @@ static pack_t *COM_LoadPackFile (const char *packfile)
 	if (Sys_FileOpenRead (packfile, &packhandle) == -1)
 		return NULL;
 
-	Sys_FileRead (packhandle, (void *)&header, sizeof(header));
-	if (header.id[0] != 'P' || header.id[1] != 'A' || header.id[2] != 'C' || header.id[3] != 'K')
+	if (Sys_FileRead(packhandle, &header, sizeof(header)) != (int) sizeof(header) ||
+	    header.id[0] != 'P' || header.id[1] != 'A' || header.id[2] != 'C' || header.id[3] != 'K')
 		Sys_Error ("%s is not a packfile", packfile);
 
 	header.dirofs = LittleLong (header.dirofs);
@@ -1981,7 +2057,8 @@ static pack_t *COM_LoadPackFile (const char *packfile)
 	newfiles = (packfile_t *) Z_Malloc(numpackfiles * sizeof(packfile_t));
 
 	Sys_FileSeek (packhandle, header.dirofs);
-	Sys_FileRead (packhandle, (void *)info, header.dirlen);
+	if (Sys_FileRead(packhandle, info, header.dirlen) != header.dirlen)
+		Sys_Error ("Error reading %s", packfile);
 
 	// crc the directory to check for modifications
 	CRC_Init (&crc);
@@ -2202,6 +2279,7 @@ static void COM_Game_f (void)
 			R_NewGame ();
 		}
 		ExtraMaps_NewGame ();
+		Host_Resetdemos ();
 		DemoList_Rebuild ();
 
 		Con_Printf("\"game\" changed to \"%s\"\n", COM_SkipPath(com_gamedir));
@@ -2589,7 +2667,7 @@ fail:			mz_zip_reader_end(&archive);
 	cursor = localization.text;
 
 	// skip BOM
-	if ((unsigned char)(cursor[0]) == 0xEF && (unsigned char)(cursor[1]) == 0xBB && cursor[2] == 0xB)
+	if ((unsigned char)(cursor[0]) == 0xEF && (unsigned char)(cursor[1]) == 0xBB && (unsigned char)(cursor[2]) == 0xBF)
 		cursor += 3;
 
 	lineno = 0;
