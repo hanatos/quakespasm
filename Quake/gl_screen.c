@@ -273,7 +273,6 @@ float CalcFovy (float fov_x, float width, float height)
 	return a;
 }
 
-#if 0
 /*
 =================
 SCR_CalcRefdef
@@ -331,7 +330,6 @@ static void SCR_CalcRefdef (void)
 
 	scr_vrect = r_refdef.vrect;
 }
-#endif
 
 
 /*
@@ -1059,7 +1057,6 @@ needs almost the entire 256k of stack space!
 */
 void SCR_UpdateScreen (void)
 {
-#if 1 // jo -- minimum to compute refdef/camera pos
 	vid.numpages = (gl_triplebuffer.value) ? 3 : 2;
 
 	if (scr_disabled_for_loading)
@@ -1079,8 +1076,6 @@ void SCR_UpdateScreen (void)
 
 	V_RenderView ();
 
-#endif
-#if 0
 	vid.numpages = (gl_triplebuffer.value) ? 3 : 2;
 
 	if (scr_disabled_for_loading)
@@ -1097,14 +1092,17 @@ void SCR_UpdateScreen (void)
 	if (!scr_initialized || !con_initialized)
 		return;				// not initialized yet
 
-
+#if 0
 	GL_BeginRendering (&glx, &gly, &glwidth, &glheight);
+#endif
 
 	//
 	// determine size of refresh window
 	//
 	if (vid.recalc_refdef)
 		SCR_CalcRefdef ();
+
+#if 0
 
 //
 // do 3D refresh drawing, and then update the screen
