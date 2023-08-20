@@ -91,7 +91,8 @@ static char *PF_VarString (int	first)
 	{
 		if (!dev_overflows.varstring || dev_overflows.varstring + CONSOLE_RESPAM_TIME < realtime)
 		{
-			Con_DWarning("PF_VarString: %i characters exceeds standard limit of 255 (max = %d).\n", (int) s, (int)(sizeof(out) - 1));
+			Con_DWarning("PF_VarString: %i characters exceeds standard limit of 255 (max = %d).\n",
+								(int) s, (int)(sizeof(out) - 1));
 			dev_overflows.varstring = realtime;
 		}
 	}
@@ -608,27 +609,29 @@ static void PF_ambientsound (void)
 	}
 	//johnfitz
 
+	SV_ReserveSignonSpace (17);
+
 // add an svc_spawnambient command to the level signon packet
 
 	//johnfitz -- PROTOCOL_FITZQUAKE
 	if (large)
-		MSG_WriteByte (&sv.signon,svc_spawnstaticsound2);
+		MSG_WriteByte (sv.signon,svc_spawnstaticsound2);
 	else
-		MSG_WriteByte (&sv.signon,svc_spawnstaticsound);
+		MSG_WriteByte (sv.signon,svc_spawnstaticsound);
 	//johnfitz
 
 	for (i = 0; i < 3; i++)
-		MSG_WriteCoord(&sv.signon, pos[i], sv.protocolflags);
+		MSG_WriteCoord(sv.signon, pos[i], sv.protocolflags);
 
 	//johnfitz -- PROTOCOL_FITZQUAKE
 	if (large)
-		MSG_WriteShort(&sv.signon, soundnum);
+		MSG_WriteShort(sv.signon, soundnum);
 	else
-		MSG_WriteByte (&sv.signon, soundnum);
+		MSG_WriteByte (sv.signon, soundnum);
 	//johnfitz
 
-	MSG_WriteByte (&sv.signon, vol*255);
-	MSG_WriteByte (&sv.signon, attenuation*64);
+	MSG_WriteByte (sv.signon, vol*255);
+	MSG_WriteByte (sv.signon, attenuation*64);
 
 }
 
@@ -660,15 +663,6 @@ static void PF_sound (void)
 	sample = G_STRING(OFS_PARM2);
 	volume = G_FLOAT(OFS_PARM3) * 255;
 	attenuation = G_FLOAT(OFS_PARM4);
-
-	if (volume < 0 || volume > 255)
-		Host_Error ("SV_StartSound: volume = %i", volume);
-
-	if (attenuation < 0 || attenuation > 4)
-		Host_Error ("SV_StartSound: attenuation = %f", attenuation);
-
-	if (channel < 0 || channel > 7)
-		Host_Error ("SV_StartSound: channel = %i", channel);
 
 	SV_StartSound (entity, channel, sample, volume, attenuation);
 }
@@ -970,24 +964,34 @@ static void PF_findradius (void)
 	edict_t	*ent, *chain;
 	float	rad;
 	float	*org;
-	vec3_t	eorg;
-	int	i, j;
+	int		i;
 
 	chain = (edict_t *)sv.edicts;
 
 	org = G_VECTOR(OFS_PARM0);
 	rad = G_FLOAT(OFS_PARM1);
+	rad *= rad;
 
 	ent = NEXT_EDICT(sv.edicts);
 	for (i = 1; i < sv.num_edicts; i++, ent = NEXT_EDICT(ent))
 	{
+		float d, lensq;
 		if (ent->free)
 			continue;
 		if (ent->v.solid == SOLID_NOT)
 			continue;
-		for (j = 0; j < 3; j++)
-			eorg[j] = org[j] - (ent->v.origin[j] + (ent->v.mins[j] + ent->v.maxs[j]) * 0.5);
-		if (VectorLength(eorg) > rad)
+
+		d = org[0] - (ent->v.origin[0] + (ent->v.mins[0] + ent->v.maxs[0]) * 0.5);
+		lensq = d * d;
+		if (lensq > rad)
+			continue;
+		d = org[1] - (ent->v.origin[1] + (ent->v.mins[1] + ent->v.maxs[1]) * 0.5);
+		lensq += d * d;
+		if (lensq > rad)
+			continue;
+		d = org[2] - (ent->v.origin[2] + (ent->v.mins[2] + ent->v.maxs[2]) * 0.5);
+		lensq += d * d;
+		if (lensq > rad)
 			continue;
 
 		ent->v.chain = EDICT_TO_PROG(chain);
@@ -1521,7 +1525,7 @@ static sizebuf_t *WriteDest (void)
 		return &sv.reliable_datagram;
 
 	case MSG_INIT:
-		return &sv.signon;
+		return sv.signon;
 
 	default:
 		PR_RunError ("WriteDest: bad destination");
@@ -1605,39 +1609,57 @@ static void PF_makestatic (void)
 			bits |= B_LARGEFRAME;
 		if (ent->alpha != ENTALPHA_DEFAULT)
 			bits |= B_ALPHA;
+
+		if (sv.protocol == PROTOCOL_RMQ)
+		{
+			eval_t* val;
+			val = GetEdictFieldValue(ent, "scale");
+			if (val)
+				ent->scale = ENTSCALE_ENCODE(val->_float);
+			else
+				ent->scale = ENTSCALE_DEFAULT;
+
+			if (ent->scale != ENTSCALE_DEFAULT)
+				bits |= B_SCALE;
+		}
 	}
+
+	SV_ReserveSignonSpace (33);
 
 	if (bits)
 	{
-		MSG_WriteByte (&sv.signon, svc_spawnstatic2);
-		MSG_WriteByte (&sv.signon, bits);
+		MSG_WriteByte (sv.signon, svc_spawnstatic2);
+		MSG_WriteByte (sv.signon, bits);
 	}
 	else
-		MSG_WriteByte (&sv.signon, svc_spawnstatic);
+		MSG_WriteByte (sv.signon, svc_spawnstatic);
 
 	if (bits & B_LARGEMODEL)
-		MSG_WriteShort (&sv.signon, SV_ModelIndex(PR_GetString(ent->v.model)));
+		MSG_WriteShort (sv.signon, SV_ModelIndex(PR_GetString(ent->v.model)));
 	else
-		MSG_WriteByte (&sv.signon, SV_ModelIndex(PR_GetString(ent->v.model)));
+		MSG_WriteByte (sv.signon, SV_ModelIndex(PR_GetString(ent->v.model)));
 
 	if (bits & B_LARGEFRAME)
-		MSG_WriteShort (&sv.signon, ent->v.frame);
+		MSG_WriteShort (sv.signon, ent->v.frame);
 	else
-		MSG_WriteByte (&sv.signon, ent->v.frame);
+		MSG_WriteByte (sv.signon, ent->v.frame);
 	//johnfitz
 
-	MSG_WriteByte (&sv.signon, ent->v.colormap);
-	MSG_WriteByte (&sv.signon, ent->v.skin);
+	MSG_WriteByte (sv.signon, ent->v.colormap);
+	MSG_WriteByte (sv.signon, ent->v.skin);
 	for (i = 0; i < 3; i++)
 	{
-		MSG_WriteCoord(&sv.signon, ent->v.origin[i], sv.protocolflags);
-		MSG_WriteAngle(&sv.signon, ent->v.angles[i], sv.protocolflags);
+		MSG_WriteCoord(sv.signon, ent->v.origin[i], sv.protocolflags);
+		MSG_WriteAngle(sv.signon, ent->v.angles[i], sv.protocolflags);
 	}
 
 	//johnfitz -- PROTOCOL_FITZQUAKE
 	if (bits & B_ALPHA)
-		MSG_WriteByte (&sv.signon, ent->alpha);
+		MSG_WriteByte (sv.signon, ent->alpha);
 	//johnfitz
+
+	if (bits & B_SCALE)
+		MSG_WriteByte (sv.signon, ent->scale);
 
 // throw the entity away now
 	ED_Free (ent);
@@ -1688,12 +1710,33 @@ static void PF_changelevel (void)
 
 /*
 ==============
-PF_finalefinished -- used by 2021 release.
+2021 re-release
 ==============
 */
 static void PF_finalefinished (void)
 {
 	G_FLOAT(OFS_RETURN) = 0;
+}
+static void PF_CheckPlayerEXFlags (void)
+{
+	G_FLOAT(OFS_RETURN) = 0;
+}
+static void PF_walkpathtogoal (void)
+{
+	G_FLOAT(OFS_RETURN) = 0; /* PATH_ERROR */
+}
+static void PF_localsound (void)
+{
+	const char	*sample;
+	int		entnum;
+
+	entnum = G_EDICTNUM(OFS_PARM0);
+	sample = G_STRING(OFS_PARM1);
+	if (entnum < 1 || entnum > svs.maxclients) {
+		Con_Printf ("tried to localsound to a non-client\n");
+		return;
+	}
+	SV_LocalSound (&svs.clients[entnum-1], sample);
 }
 
 static void PF_Fixme (void)
@@ -1792,9 +1835,9 @@ static builtin_t pr_builtin[] =
 
 	PF_setspawnparms,
 
-	// 2021 release
+	// 2021 re-release
 	PF_finalefinished,	// float() finaleFinished = #79
-	PF_Fixme,		// void localsound (entity client, string sample) = #80
+	PF_localsound,		// void localsound (entity client, string sample) = #80
 	PF_Fixme,		// void draw_point (vector point, float colormap, float lifetime, float depthtest) = #81
 	PF_Fixme,		// void draw_line (vector start, vector end, float colormap, float lifetime, float depthtest) = #82
 	PF_Fixme,		// void draw_arrow (vector start, vector end, float colormap, float size, float lifetime, float depthtest) = #83
@@ -1804,11 +1847,12 @@ static builtin_t pr_builtin[] =
 	PF_Fixme,		// void draw_worldtext (string s, vector origin, float size, float lifetime, float depthtest) = #87
 	PF_Fixme,		// void draw_sphere (vector origin, float radius, float colormap, float lifetime, float depthtest) = #88
 	PF_Fixme,		// void draw_cylinder (vector origin, float halfHeight, float radius, float colormap, float lifetime, float depthtest) = #89
-	PF_centerprint ,	// #90
-	PF_bprint,
-	PF_sprint,
+
+	PF_CheckPlayerEXFlags,
+	PF_walkpathtogoal,
+
+	PF_Fixme,
 };
 
-builtin_t *pr_builtins = pr_builtin;
-int pr_numbuiltins = sizeof(pr_builtin)/sizeof(pr_builtin[0]);
-
+const builtin_t *pr_builtins = pr_builtin;
+const int pr_numbuiltins = sizeof(pr_builtin) / sizeof(pr_builtin[0]);

@@ -102,12 +102,13 @@ typedef struct particle_s
 
 //====================================================
 
-extern	qboolean	r_cache_thrash;		// compatability
 extern	vec3_t		modelorg, r_entorigin;
 extern	entity_t	*currententity;
 extern	int		r_visframecount;	// ??? what difs?
 extern	int		r_framecount;
 extern	mplane_t	frustum[4];
+
+extern	texture_t	*r_notexture_mip, *r_notexture_mip2;
 
 //
 // view origin
@@ -138,6 +139,7 @@ extern	cvar_t	r_wateralpha;
 extern	cvar_t	r_lavaalpha;
 extern	cvar_t	r_telealpha;
 extern	cvar_t	r_slimealpha;
+extern	cvar_t	r_litwater;
 extern	cvar_t	r_dynamic;
 extern	cvar_t	r_novis;
 extern	cvar_t	r_scale;
@@ -207,6 +209,7 @@ typedef void (APIENTRYP QS_PFNGLUNIFORM1IPROC) (GLint location, GLint v0);
 typedef void (APIENTRYP QS_PFNGLUNIFORM1FPROC) (GLint location, GLfloat v0);
 typedef void (APIENTRYP QS_PFNGLUNIFORM3FPROC) (GLint location, GLfloat v0, GLfloat v1, GLfloat v2);
 typedef void (APIENTRYP QS_PFNGLUNIFORM4FPROC) (GLint location, GLfloat v0, GLfloat v1, GLfloat v2, GLfloat v3);
+typedef void (APIENTRYP QS_PFNGENERATEMIPMAP) (GLenum type);
 
 extern QS_PFNGLCREATESHADERPROC GL_CreateShaderFunc;
 extern QS_PFNGLDELETESHADERPROC GL_DeleteShaderFunc;
@@ -237,6 +240,9 @@ extern	qboolean	gl_glsl_gamma_able;
 extern	qboolean	gl_glsl_alias_able;
 // ericw --
 
+//mipmapped warp textures
+extern int GL_GenerateMipmap;
+
 //ericw -- NPOT texture support
 extern	qboolean	gl_texture_NPOT;
 
@@ -248,7 +254,15 @@ extern	qboolean	gl_texture_NPOT;
 #define OFFSET_FOG -2
 #define OFFSET_SHOWTRIS -3
 void GL_PolygonOffset (int);
+#endif
 
+//GL_EXT_packed_pixels
+#ifndef GL_UNSIGNED_INT_10_10_10_2
+#define GL_UNSIGNED_INT_10_10_10_2 0x8036
+#endif
+extern qboolean gl_packed_pixels;
+
+#if 0
 //johnfitz -- GL_EXT_texture_env_combine
 //the values for GL_ARB_ are identical
 #define GL_COMBINE_EXT		0x8570
@@ -267,9 +281,8 @@ extern qboolean gl_texture_env_add; // for GL_EXT_texture_env_add
 #endif
 
 //johnfitz -- rendering statistics
-extern int rs_brushpolys, rs_aliaspolys, rs_skypolys, rs_particles, rs_fogpolys;
+extern int rs_brushpolys, rs_aliaspolys, rs_skypolys;
 extern int rs_dynamiclightmaps, rs_brushpasses, rs_aliaspasses, rs_skypasses;
-extern float rs_megatexels;
 
 //johnfitz -- track developer statistics that vary every frame
 extern cvar_t devstats;
@@ -348,7 +361,7 @@ void R_MarkSurfaces (void);
 qboolean R_CullBox (vec3_t emins, vec3_t emaxs);
 void R_StoreEfrags (efrag_t **ppefrag);
 qboolean R_CullModelForEntity (entity_t *e);
-void R_RotateForEntity (vec3_t origin, vec3_t angles);
+void R_RotateForEntity (vec3_t origin, vec3_t angles, unsigned char scale);
 void R_MarkLights (dlight_t *light, int num, mnode_t *node);
 void R_SetupView();
 
@@ -408,8 +421,8 @@ void Sky_Init (void);
 void Sky_ClearAll (void);
 void Sky_DrawSky (void);
 void Sky_NewMap (void);
-void Sky_LoadTexture (texture_t *mt);
-void Sky_LoadTextureQ64 (texture_t *mt);
+void Sky_LoadTexture (qmodel_t *m, texture_t *mt);
+void Sky_LoadTextureQ64 (qmodel_t *m, texture_t *mt);
 void Sky_LoadSkyBox (const char *name);
 
 void TexMgr_RecalcWarpImageSize (void);

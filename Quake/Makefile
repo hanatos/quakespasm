@@ -14,9 +14,10 @@ USE_CODEC_FLAC=0
 USE_CODEC_MP3=1
 USE_CODEC_VORBIS=1
 USE_CODEC_OPUS=0
-# either mikmod or xmp
+# either xmp or mikmod (or modplug)
 USE_CODEC_MIKMOD=0
 USE_CODEC_XMP=0
+USE_CODEC_MODPLUG=0
 USE_CODEC_UMX=0
 
 # which library to use for mp3 decoding: mad or mpg123
@@ -32,9 +33,9 @@ check_gcc = $(shell if echo | $(CC) $(1) -Werror -S -o /dev/null -xc - > /dev/nu
 
 # ---------------------------
 
-HOST_OS := $(shell uname|sed -e s/_.*//|tr '[:upper:]' '[:lower:]')
+HOST_OS = $(shell uname|sed -e s/_.*//|tr '[:upper:]' '[:lower:]')
 
-DEBUG   ?= 0
+DEBUG ?= 0
 
 # ---------------------------
 # build variables
@@ -48,9 +49,10 @@ STRIP ?= strip
 PKG_CONFIG ?= pkg-config
 
 CPUFLAGS=
-LDFLAGS =
+LDFLAGS?=
 DFLAGS ?=
-CFLAGS ?= -Wall -Wno-trigraphs
+CFLAGS ?= -Wall -Wno-trigraphs -MMD
+CFLAGS += $(call check_gcc,-std=gnu11,)
 CFLAGS += $(CPUFLAGS)
 CFLAGS += -fPIC
 ifneq ($(DEBUG),0)
@@ -60,6 +62,7 @@ do_strip=
 else
 DFLAGS += -DNDEBUG
 CFLAGS += -O2
+#CFLAGS += -fno-asynchronous-unwind-tables
 CFLAGS += $(call check_gcc,-fweb,)
 CFLAGS += $(call check_gcc,-frename-registers,)
 cmd_strip=$(STRIP) $(1)
@@ -72,10 +75,12 @@ ifeq ($(DO_USERDIRS),1)
 CFLAGS += -DDO_USERDIRS=1
 endif
 
+NET_LIBS   =
 ifeq ($(HOST_OS),sunos)
-NET_LIBS   :=-lsocket -lnsl -lresolv
-else
-NET_LIBS   :=
+NET_LIBS   =-lsocket -lnsl -lresolv
+endif
+ifeq ($(HOST_OS),haiku)
+NET_LIBS   =-lnetwork
 endif
 
 ifneq ($(VORBISLIB),vorbis)
@@ -105,7 +110,7 @@ cpp_vorbisdec=-DVORBIS_USE_TREMOR
 lib_vorbisdec=-lvorbisidec -logg
 endif
 
-CODECLIBS  :=
+CODECLIBS  =
 ifeq ($(USE_CODEC_WAVE),1)
 CFLAGS+= -DUSE_CODEC_WAVE
 endif
@@ -137,6 +142,10 @@ ifeq ($(USE_CODEC_XMP),1)
 CFLAGS+= -DUSE_CODEC_XMP
 CODECLIBS+= -lxmp
 endif
+ifeq ($(USE_CODEC_MODPLUG),1)
+CFLAGS+= -DUSE_CODEC_MODPLUG
+CODECLIBS+= -lmodplug
+endif
 ifeq ($(USE_CODEC_UMX),1)
 CFLAGS+= -DUSE_CODEC_UMX
 endif
@@ -162,9 +171,9 @@ DEFAULT_TARGET := libquakespasm.a
 
 # ----------------------------------------------------------------------------
 # objects
-# ----------------------------------------------------------------------------
+# ---------------------------
 
-MUSIC_OBJS:= bgmusic.o \
+MUSIC_OBJS= bgmusic.o \
 	snd_codec.o \
 	snd_flac.o \
 	snd_wave.o \
@@ -173,6 +182,7 @@ MUSIC_OBJS:= bgmusic.o \
 	$(mp3_obj).o \
 	snd_mp3tag.o \
 	snd_mikmod.o \
+	snd_modplug.o \
 	snd_xmp.o \
 	snd_umx.o
 COMOBJ_SND := snd_dma.o snd_mix.o snd_mem.o $(MUSIC_OBJS)
@@ -200,7 +210,7 @@ GLOBJS = \
  	r_brush.o \
  	gl_model.o
 
-OBJS := strlcat.o \
+OBJS = strlcat.o \
 	strlcpy.o \
 	$(GLOBJS) \
 	$(COMOBJ_SND) \
