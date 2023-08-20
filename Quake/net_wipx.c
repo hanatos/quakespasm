@@ -36,7 +36,7 @@ static sys_socket_t net_controlsocket;
 static struct sockaddr_ipx broadcastaddr;
 
 /* externs from net_wins.c: */
-extern qboolean winsock_initialized;
+extern int	winsock_initialized;
 extern WSADATA		winsockdata;
 extern const char *__WSAE_StrError (int);
 
@@ -75,8 +75,8 @@ sys_socket_t WIPX_Init (void)
 	if (gethostname(buff, MAXHOSTNAMELEN) != 0)
 	{
 		err = SOCKETERRNO;
-		Con_SafePrintf("WIPX_Init: gethostname failed (%s)\n",
-							socketerror(err));
+		Con_SafePrintf("WIPX_Init: WARNING: gethostname failed (%s)\n",
+						socketerror(err));
 	}
 	else
 	{

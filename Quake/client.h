@@ -264,6 +264,8 @@ extern	cvar_t	m_yaw;
 extern	cvar_t	m_forward;
 extern	cvar_t	m_side;
 
+extern	cvar_t	cl_startdemos;
+
 
 #define	MAX_TEMP_ENTITIES	256		//johnfitz -- was 64
 #define	MAX_STATIC_ENTITIES	4096	//ericw -- was 512	//johnfitz -- was 128
@@ -332,6 +334,7 @@ void CL_ClearState (void);
 //
 void CL_StopPlayback (void);
 int CL_GetMessage (void);
+void CL_ClearSignons (void);
 
 void CL_Stop_f (void);
 void CL_Record_f (void);

@@ -39,7 +39,7 @@ static in_addr_t	myAddr;
 
 sys_socket_t UDP_Init (void)
 {
-	int	err;
+	int	err, i;
 	char	*tst;
 	char	buff[MAXHOSTNAMELEN];
 	struct hostent		*local;
@@ -53,8 +53,8 @@ sys_socket_t UDP_Init (void)
 	if (gethostname(buff, MAXHOSTNAMELEN) != 0)
 	{
 		err = SOCKETERRNO;
-		Con_SafePrintf("UDP_Init: gethostname failed (%s)\n",
-							socketerror(err));
+		Con_SafePrintf("UDP_Init: WARNING: gethostname failed (%s)\n",
+						socketerror(err));
 	}
 	else
 	{
@@ -72,8 +72,8 @@ sys_socket_t UDP_Init (void)
 #endif
 		if (!(local = gethostbyname(buff)))
 		{
-			Con_SafePrintf("UDP_Init: gethostbyname failed (%s)\n",
-							hstrerror(h_errno));
+			Con_SafePrintf("UDP_Init: WARNING: gethostbyname failed (%s)\n",
+						hstrerror(h_errno));
 		}
 		else if (local->h_addrtype != AF_INET)
 		{
@@ -81,7 +81,25 @@ sys_socket_t UDP_Init (void)
 		}
 		else
 		{
-			myAddr = *(in_addr_t *)local->h_addr_list[0];
+			i = COM_CheckParm ("-ip");
+			if (i)
+			{
+				if (i < com_argc-1)
+				{
+					myAddr = inet_addr(com_argv[i + 1]);
+					if (myAddr == INADDR_NONE)
+						Sys_Error ("%s is not a valid IP address", com_argv[i + 1]);
+					strcpy(my_tcpip_address, com_argv[i + 1]);
+				}
+				else
+				{
+					Sys_Error ("NET_Init: you must specify an IP address after -ip");
+				}
+			}
+			else
+			{
+				myAddr = *(in_addr_t *)local->h_addr_list[0];
+			}
 		}
 	}
 
@@ -349,8 +367,8 @@ const char *UDP_AddrToString (struct qsockaddr *addr)
 
 	haddr = ntohl(((struct sockaddr_in *)addr)->sin_addr.s_addr);
 	q_snprintf (buffer, sizeof(buffer), "%d.%d.%d.%d:%d", (haddr >> 24) & 0xff,
-			   (haddr >> 16) & 0xff, (haddr >> 8) & 0xff, haddr & 0xff,
-			    ntohs(((struct sockaddr_in *)addr)->sin_port));
+			  (haddr >> 16) & 0xff, (haddr >> 8) & 0xff, haddr & 0xff,
+			  ntohs(((struct sockaddr_in *)addr)->sin_port));
 	return buffer;
 }
 

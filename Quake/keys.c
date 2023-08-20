@@ -256,8 +256,8 @@ void Key_Console (int key)
 
 		// If the last two lines are identical, skip storing this line in history 
 		// by not incrementing edit_line
-		if (strcmp(workline, key_lines[(edit_line-1)&31]))
-			edit_line = (edit_line + 1) & 31;
+		if (strcmp(workline, key_lines[(edit_line - 1) & (CMDLINES - 1)]))
+			edit_line = (edit_line + 1) & (CMDLINES - 1);
 
 		history_line = edit_line;
 		key_lines[edit_line][0] = ']';
@@ -355,11 +355,11 @@ void Key_Console (int key)
 		len = strlen(workline);
 		if ((int)len == key_linepos)
 		{
-			len = strlen(key_lines[(edit_line + 31) & 31]);
+			len = strlen(key_lines[(edit_line + (CMDLINES - 1)) & (CMDLINES - 1)]);
 			if ((int)len <= key_linepos)
 				return; // no character to get
 			workline += key_linepos;
-			*workline = key_lines[(edit_line + 31) & 31][key_linepos];
+			*workline = key_lines[(edit_line + (CMDLINES - 1)) & (CMDLINES - 1)][key_linepos];
 			workline[1] = 0;
 			key_linepos++;
 		}
@@ -377,7 +377,7 @@ void Key_Console (int key)
 		history_line_last = history_line;
 		do
 		{
-			history_line = (history_line - 1) & 31;
+			history_line = (history_line - 1) & (CMDLINES - 1);
 		} while (history_line != edit_line && !key_lines[history_line][1]);
 
 		if (history_line == edit_line)
@@ -387,8 +387,9 @@ void Key_Console (int key)
 		}
 
 		key_tabpartial[0] = 0;
-		Q_strcpy(workline, key_lines[history_line]);
-		key_linepos = Q_strlen(workline);
+		len = strlen(key_lines[history_line]);
+		memmove(workline, key_lines[history_line], len+1);
+		key_linepos = (int)len;
 		return;
 
 	case K_DOWNARROW:
@@ -399,13 +400,20 @@ void Key_Console (int key)
 
 		do
 		{
-			history_line = (history_line + 1) & 31;
+			history_line = (history_line + 1) & (CMDLINES - 1);
 		} while (history_line != edit_line && !key_lines[history_line][1]);
 
 		if (history_line == edit_line)
-			Q_strcpy(workline, current);
-		else	Q_strcpy(workline, key_lines[history_line]);
-		key_linepos = Q_strlen(workline);
+		{
+			len = strlen(current);
+			memcpy(workline, current, len+1);
+		}
+		else
+		{
+			len = strlen(key_lines[history_line]);
+			memmove(workline, key_lines[history_line], len+1);
+		}
+		key_linepos = (int)len;
 		return;
 
 	case K_INS:
@@ -941,6 +949,21 @@ Should NOT be called during an interrupt!
 */
 void Key_Event (int key, qboolean down)
 {
+	Key_EventWithKeycode (key, down, 0);
+}
+
+/*
+===================
+Key_EventWithKeycode
+
+Called by the system between frames for both key up and key down events
+Should NOT be called during an interrupt!
+keycode parameter should have the key's actual keycode using the current keyboard layout,
+not necessarily the US-keyboard-based scancode. Pass 0 if not applicable.
+===================
+*/
+void Key_EventWithKeycode (int key, qboolean down, int keycode)
+{
 	char	*kb;
 	char	cmd[1024];
 
@@ -973,7 +996,11 @@ void Key_Event (int key, qboolean down)
 	if (key_inputgrab.active)
 	{
 		if (down)
+		{
 			key_inputgrab.lastkey = key;
+			if (keycode > 0)
+				key_inputgrab.lastchar = keycode;
+		}
 		return;
 	}
 
@@ -1127,7 +1154,11 @@ Key_TextEntry
 qboolean Key_TextEntry (void)
 {
 	if (key_inputgrab.active)
-		return true;
+	{
+		// This path is used for simple single-letter inputs (y/n prompts) that also
+		// accept controller input, so we don't want an onscreen keyboard for this case.
+		return false;
+	}
 
 	switch (key_dest)
 	{
@@ -1136,9 +1167,10 @@ qboolean Key_TextEntry (void)
 	case key_menu:
 		return M_TextEntry();
 	case key_game:
-		if (!con_forcedup)
-			return false;
-		/* fallthrough */
+		// Don't return true even during con_forcedup, because that happens while starting a
+		// game and we don't to trigger text input (and the onscreen keyboard on some devices)
+		// during this.
+		return false;
 	case key_console:
 		return true;
 	default:

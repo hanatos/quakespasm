@@ -123,8 +123,6 @@ Returns false if the entity removed itself.
 qboolean SV_RunThink (edict_t *ent)
 {
 	float	thinktime;
-	float	oldframe; //johnfitz
-	int		i; //johnfitz
 
 	thinktime = ent->v.nextthink;
 	if (thinktime <= 0 || thinktime > sv.time + host_frametime)
@@ -135,25 +133,14 @@ qboolean SV_RunThink (edict_t *ent)
 								// it is possible to start that way
 								// by a trigger with a local time.
 
-	oldframe = ent->v.frame; //johnfitz
+	ent->oldthinktime = thinktime;
+	ent->oldframe = ent->v.frame; //johnfitz
 
 	ent->v.nextthink = 0;
 	pr_global_struct->time = thinktime;
 	pr_global_struct->self = EDICT_TO_PROG(ent);
 	pr_global_struct->other = EDICT_TO_PROG(sv.edicts);
 	PR_ExecuteProgram (ent->v.think);
-
-//johnfitz -- PROTOCOL_FITZQUAKE
-//capture interval to nextthink here and send it to client for better
-//lerp timing, but only if interval is not 0.1 (which client assumes)
-	ent->sendinterval = false;
-	if (!ent->free && ent->v.nextthink && (ent->v.movetype == MOVETYPE_STEP || ent->v.frame != oldframe))
-	{
-		i = Q_rint((ent->v.nextthink-thinktime)*255);
-		if (i >= 0 && i < 256 && i != 25 && i != 26) //25 and 26 are close enough to 0.1 to not send
-			ent->sendinterval = true;
-	}
-//johnfitz
 
 	return !ent->free;
 }
@@ -779,9 +766,9 @@ int SV_TryUnstick (edict_t *ent, vec3_t oldvel)
 		clip = SV_FlyMove (ent, 0.1, &steptrace);
 
 		if ( fabs(oldorg[1] - ent->v.origin[1]) > 4
-		|| fabs(oldorg[0] - ent->v.origin[0]) > 4 )
+			|| fabs(oldorg[0] - ent->v.origin[0]) > 4 )
 		{
-//Con_DPrintf ("unstuck!\n");
+		//	Con_DPrintf ("unstuck!\n");
 			return clip;
 		}
 
@@ -1193,7 +1180,7 @@ void SV_Physics (void)
 	if (sv_freezenonclients.value)
 	  entity_cap = svs.maxclients + 1; // Only run physics on clients and the world
 	else
-	  entity_cap = sv.num_edicts; 
+	  entity_cap = sv.num_edicts;
 
 	//for (i=0 ; i<sv.num_edicts ; i++, ent = NEXT_EDICT(ent))
 	for (i=0 ; i<entity_cap ; i++, ent = NEXT_EDICT(ent))
@@ -1224,6 +1211,18 @@ void SV_Physics (void)
 			SV_Physics_Toss (ent);
 		else
 			Sys_Error ("SV_Physics: bad movetype %i", (int)ent->v.movetype);
+
+	//johnfitz -- PROTOCOL_FITZQUAKE
+	//capture interval to nextthink here and send it to client for better
+	//lerp timing, but only if interval is not 0.1 (which client assumes)
+		ent->sendinterval = false;
+		if (!ent->free && ent->v.nextthink > sv.time && (ent->v.movetype == MOVETYPE_STEP || ent->v.movetype == MOVETYPE_WALK || ent->v.frame != ent->oldframe))
+		{
+			int j = Q_rint((ent->v.nextthink-ent->oldthinktime)*255);
+			if (j >= 0 && j < 256 && j != 25 && j != 26) //25 and 26 are close enough to 0.1 to not send
+				ent->sendinterval = true;
+		}
+	//johnfitz
 	}
 
 	if (pr_global_struct->force_retouch)

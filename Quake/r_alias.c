@@ -450,9 +450,11 @@ void R_SetupAliasFrame (entity_t *e, aliashdr_t *paliashdr, int frame, lerpdata_
 	if (r_lerpmodels.value && !(e->model->flags & MOD_NOLERP && r_lerpmodels.value != 2))
 	{
 		if (e->lerpflags & LERP_FINISH && numposes == 1)
-			lerpdata->blend = CLAMP (0, (cl.time - e->lerpstart) / (e->lerpfinish - e->lerpstart), 1);
+			lerpdata->blend = CLAMP (0.0f, (float)(cl.time - e->lerpstart) / (e->lerpfinish - e->lerpstart), 1.0f);
 		else
-			lerpdata->blend = CLAMP (0, (cl.time - e->lerpstart) / e->lerptime, 1);
+			lerpdata->blend = CLAMP (0.0f, (float)(cl.time - e->lerpstart) / e->lerptime, 1.0f);
+		if (lerpdata->blend == 1.0f)
+			e->previouspose = e->currentpose;
 		lerpdata->pose1 = e->previouspose;
 		lerpdata->pose2 = e->currentpose;
 	}
@@ -463,6 +465,7 @@ void R_SetupAliasFrame (entity_t *e, aliashdr_t *paliashdr, int frame, lerpdata_
 		lerpdata->pose2 = posenum;
 	}
 }
+
 
 /*
 =================
@@ -498,9 +501,9 @@ void R_SetupEntityTransform (entity_t *e, lerpdata_t *lerpdata)
 	if (r_lerpmove.value && e != &cl.viewent && e->lerpflags & LERP_MOVESTEP)
 	{
 		if (e->lerpflags & LERP_FINISH)
-			blend = CLAMP (0, (cl.time - e->movelerpstart) / (e->lerpfinish - e->movelerpstart), 1);
+			blend = CLAMP (0.0f, (float)(cl.time - e->movelerpstart) / (e->lerpfinish - e->movelerpstart), 1.0f);
 		else
-			blend = CLAMP (0, (cl.time - e->movelerpstart) / 0.1, 1);
+			blend = CLAMP (0.0f, (float)(cl.time - e->movelerpstart) / 0.1f, 1.0f);
 
 		//translation
 		VectorSubtract (e->currentorigin, e->previousorigin, d);
@@ -539,14 +542,17 @@ void R_SetupAliasLighting (entity_t	*e)
 	int			i;
 	int		quantizedangle;
 	float		radiansangle;
-	vec3_t		lpos;
 
-	VectorCopy (e->origin, lpos);
-	// start the light trace from slightly above the origin
-	// this helps with models whose origin is below ground level, but are otherwise visible
-	// (e.g. some of the candles in the DOTM start map, which would otherwise appear black)
-	lpos[2] += e->model->maxs[2] * 0.5f;
-	R_LightPoint (lpos);
+	// if the initial trace is completely black, try again from above
+	// this helps with models whose origin is slightly below ground level
+	// (e.g. some of the candles in the DOTM start map)
+	if (!R_LightPoint (e->origin))
+	{
+		vec3_t lpos;
+		VectorCopy (e->origin, lpos);
+		lpos[2] += e->model->maxs[2] * 0.5f;
+		R_LightPoint (lpos);
+	}
 
 	//add dlights
 	for (i=0 ; i<MAX_DLIGHTS ; i++)
@@ -624,7 +630,7 @@ R_DrawAliasModel -- johnfitz -- almost completely rewritten
 void R_DrawAliasModel (entity_t *e)
 {
 	aliashdr_t	*paliashdr;
-	int			i, anim, skinnum;
+	int		anim, skinnum;
 	gltexture_t	*tx, *fb;
 	lerpdata_t	lerpdata;
 	qboolean	alphatest = !!(e->model->flags & MF_HOLEY);
@@ -650,7 +656,7 @@ void R_DrawAliasModel (entity_t *e)
 		fovscale = tan(scr_fov.value * (0.5f * M_PI / 180.f));
 
 	glPushMatrix ();
-	R_RotateForEntity (lerpdata.origin, lerpdata.angles);
+	R_RotateForEntity (lerpdata.origin, lerpdata.angles, e->scale);
 	glTranslatef (paliashdr->scale_origin[0], paliashdr->scale_origin[1] * fovscale, paliashdr->scale_origin[2] * fovscale);
 	glScalef (paliashdr->scale[0], paliashdr->scale[1] * fovscale, paliashdr->scale[2] * fovscale);
 
@@ -704,9 +710,8 @@ void R_DrawAliasModel (entity_t *e)
 	fb = paliashdr->fbtextures[skinnum][anim];
 	if (e->colormap != vid.colormap && !gl_nocolors.value)
 	{
-		i = e - cl_entities;
-		if (i >= 1 && i<=cl.maxclients /* && !strcmp (currententity->model->name, "progs/player.mdl") */)
-		    tx = playertextures[i - 1];
+		if ((uintptr_t)e >= (uintptr_t)&cl_entities[1] && (uintptr_t)e <= (uintptr_t)&cl_entities[cl.maxclients]) /* && !strcmp (currententity->model->name, "progs/player.mdl") */
+			tx = playertextures[e - cl_entities - 1];
 	}
 	if (!gl_fullbrights.value)
 		fb = NULL;
@@ -982,7 +987,7 @@ void R_DrawAliasModel_ShowTris (entity_t *e)
 	R_SetupEntityTransform (e, &lerpdata);
 
 	glPushMatrix ();
-	R_RotateForEntity (lerpdata.origin,lerpdata.angles);
+	R_RotateForEntity (lerpdata.origin,lerpdata.angles, e->scale);
 	glTranslatef (paliashdr->scale_origin[0], paliashdr->scale_origin[1], paliashdr->scale_origin[2]);
 	glScalef (paliashdr->scale[0], paliashdr->scale[1], paliashdr->scale[2]);
 
