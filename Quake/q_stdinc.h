@@ -127,10 +127,7 @@ typedef int	qboolean;
 COMPILE_TIME_ASSERT(falsehood, (0 == false));
 COMPILE_TIME_ASSERT(truth, (1  == true));
 #else
-typedef enum {
-	false = 0,
-	true  = 1
-} qboolean;
+typedef uint32_t qboolean;
 COMPILE_TIME_ASSERT(falsehood, ((1 != 1) == false));
 COMPILE_TIME_ASSERT(truth, ((1 == 1) == true));
 #endif
